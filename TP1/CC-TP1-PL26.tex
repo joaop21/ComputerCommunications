@@ -58,7 +58,7 @@ PL2, Grupo 6
  \hline
  \textbf{browser/http} & HTTP & TCP & 80 & 32 \\
  \hline
- \textbf{nslookup} & DNS & UDP & 53 & 47 \\
+ \textbf{nslookup} & DNS & UDP & 53 & variável \\
  \hline
  \textbf{ssh} & SSH & TCP & 22 & 32 \\
  \hline
@@ -139,6 +139,15 @@ A figura \ref{fig:http}, representa um Frame capturado que contém um cabeçalho
 
 \subsection{Nslookup}
 
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.4]{nslookup.png}
+\end{center}
+\caption{\label{fig:nslook}Captura realizada aquando a utilização do comando \emph{nslookup}.}
+\end{figure}
+
+A figura \ref{fig:nslook}, representa um Frame capturado que contém um cabeçalho referente ao comando \textbf{nslookup}. Deste modo na camada de transporte (UDP) conseguimos identificar a porta de atendimento, já o overhead de transporte verificamos ser variável uma vez que mudava consoante as frames capturadas.
+
 
 
 \subsection{SSH}
@@ -159,14 +168,14 @@ Nas duas figuras seguintes, o endereço \textbf{10.1.1.1} identifica o \textbf{S
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[scale=0.45]{2_ftp.png}
+\includegraphics[scale=0.5]{2_ftp.png}
 \end{center}
 \caption{\label{fig:ssh}Diagrama temporal das transferências do file1 por \textbf{FTP}.}
 \end{figure}
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[scale=0.45]{2_tftp.png}
+\includegraphics[scale=0.5]{2_tftp.png}
 \end{center}
 \caption{\label{fig:ssh}Diagrama temporal das transferências do file1 por \textbf{TFTP}.}
 \end{figure}
@@ -180,16 +189,19 @@ Isto leva-nos a concluir que no TFTP existe um menor controlo do envio dos dados
 Nas restantes aplicações em causa, como é usado o TCP sabemos que o transporte, sendo orientado à conexão, é realizado de uma forma mais fiável.
 
 \subsection{(ii) eficiência na transferência}
-No protocolo de aplicação TFTP, como é usado UDP, não há estabelecimento e terminação da conexão o que deixa menos garantias de que a transferência seja realizada (eficientemente/com sucesso)(????????).
+No protocolo de aplicação TFTP, como é usado UDP, não há estabelecimento e terminação da conexão o que deixa menos garantias de que a transferência seja realizada com sucesso. Por outro lado o facto de não existirem estes \emph{handshakes}, torna a transferência do ficheiro muito mais eficiente.
 
-Nos restantes três protocolos de aplicação, devido ao uso do TCP, a transferência é mais fiável, pois são efetuadas conexões lógicas, existindo em cada conexão um par de sockets. Este protocolo de transporte efetua também controlo de erros, de fluxo e de congestão, o que torna a transferência mais segura.
+Nos restantes três protocolos de aplicação, devido ao uso do TCP, a transferência é mais fiável, pois são efetuadas conexões lógicas, existindo em cada conexão um par de sockets. Este protocolo de transporte efetua também controlo de erros, de fluxo e de congestão, o que torna a transferência mais segura mas por outro lado, menos eficiente.
 
 \subsection{(iii) complexidade}
-Perante o observado, por exemplo na Questão 2, concluimos que a complexidade de usar o UDP é consideravelmente inferior à de usar o TCP. Nesse caso, o FTP necessita de estabelecer conexão, transferir os dados, e realizar a desconexão. Ainda na mesma questão, conseguimos concluir que o TFTP, através do UDP, apenas realiza a transferência dos dados.
+Perante o observado, por exemplo na Questão 2, concluímos que a complexidade de usar UDP é consideravelmente inferior à de usar o TCP. No caso do TFTP conseguimos ver que apenas é realizada a transferência de dados relativos ao ficheiro.
 
-...
+Quanto ao uso de TCP, por exemplo no caso da utilização de FTP, é necessário estabelecer conexão entre o servidor e o cliente, enviar os dados relativos ao ficheiro, e por último desfazer a conexão. De referir ainda que estas fases de conexão e terminação de conexão são extensas e com várias trocas de segmentos entre ambos os participantes.
 
 \subsection{(iv) segurança}
+Quando dois sistemas comunicam sobre TCP, primeiramente necessitam de estabelecer conexão. Esta conexão é feita tendo em conta o IP origem, número de porta da origem, IP destino e número de porta destino, pelo que as comunicações entre estes dois sistemas são feitas unicamente por um socket, não podendo mais ninguém usar este para comunicar com o servidor. Fica desta forma mais difícil intercetar e enviesar comunicações. Este é o caso do FTP, SSH e HTTP.
+
+Quanto às comunicações feitas sobre UDP, estas são identificadas através de dois números, o endereço IP destino, e número de porta destino. Como não se controlam as conexões, podem existir comunicações de qualquer equipamento, não havendo filtragem por porta nem IP, podendo desta forma ficar vulnerável a ataques alheios. Neste cenário encontra-se o TFTP.
 
 
 \section{Questão 4}
