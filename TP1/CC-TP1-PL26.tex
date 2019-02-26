@@ -89,10 +89,12 @@ Perante os resultados obtidas na Questão 1, podemos concluir que, tanto o FTP, 
 
 Isto leva-nos a concluir que no TFTP existe um menor controlo do envio dos dados por parte da camada de transporte, visto este ser antes controlado pela camada de aplicação.
 
-No caso das restantes aplicações em causa, como é usado o TCP sabemos que o transporte, sendo orientado à conexão, é realizado de forma fiável, pois efetua também controlo de erros, de fluxo e de congestão.
+Nas restantes aplicações em causa, como é usado o TCP sabemos que o transporte, sendo orientado à conexão, é realizado de uma forma mais fiável.
 
 \subsection{(ii) eficiência na transferência}
-No protocolo de aplicação TFTP (uso do UDP),
+No protocolo de aplicação TFTP, como é usado UDP, não há estabelecimento e terminação da conexão o que deixa menos garantias de que a transferência seja realizada (eficientemente/com sucesso)(????????).
+
+Nos restantes três protocolos de aplicação, devido ao uso do TCP, a transferência é mais fiável, pois são efetuadas conexões lógicas, existindo em cada conexão um par de sockets. Este protocolo de transporte efetua também controlo de erros, de fluxo e de congestão, o que torna a transferência mais segura.
 
 \subsection{(iii) complexidade}
 Perante o observado, por exemplo na Questão 2, concluimos que a complexidade de usar o UDP é consideravelmente inferior à de usar o TCP. Nesse caso, o FTP necessita de estabelecer conexão, transferir os dados, e realizar a desconexão. Ainda na mesma questão, conseguimos concluir que o TFTP, através do UDP, apenas realiza a transferência dos dados.
