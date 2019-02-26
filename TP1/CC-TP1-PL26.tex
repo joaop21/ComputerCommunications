@@ -10,6 +10,7 @@
 \usepackage{epstopdf}
 \usepackage{indentfirst}
 \usepackage{graphicx}
+\graphicspath{{Capturas-Ecra/}}
 \usepackage{float}
 \usepackage{fancyvrb}
 \usepackage{amsmath}
@@ -66,19 +67,90 @@ PL2, Grupo 6
 
 \subsection{Ping}
 
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.4]{ping.png} 
+\end{center}
+\caption{\label{fig:ping}Captura realizada aquando a realização do comando \emph{ping}.}
+\end{figure} 
+
+Como possível reparar na figura \ref{fig:ping}, o comando \emph{ping} apenas utiliza \textbf{ICMP} pelo que atua praticamente apenas no nível de rede, daí as nossas escolhas aquando do preenchimento do quadro.
+
+
 \subsection{Traceroute}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.4]{traceroute.png} 
+\end{center}
+\caption{\label{fig:traceroute}Captura realizada aquando a realização do comando \emph{traceroute}.}
+\end{figure} 
+
+Como possível reparar na figura \ref{fig:traceroute}, o comando \emph{traceroute}, tal como o \emph{ping}, apenas utiliza \textbf{ICMP} pelo que atua praticamente apenas no nível de rede, daí as nossas escolhas aquando do preenchimento do quadro.
+
 
 \subsection{Telnet}
 
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.4]{telnet.png} 
+\end{center}
+\caption{\label{fig:telnet}Captura realizada aquando a realização do comando \emph{telnet}.}
+\end{figure} 
+
+A figura \ref{fig:telnet}, representa um Frame capturado que contém um cabeçalho referente à aplicação \textbf{Telnet}. Deste modo na camada de transporte (TCP) conseguimos identificar a porta de atendimento bem como o overhead de transporte em bytes, que se encontram a sublinhado na figura \ref{fig:telnet}.
+
+
 \subsection{FTP}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.4]{ftp.png} 
+\end{center}
+\caption{\label{fig:ftp}Captura realizada aquando a utilização do protocolo \emph{FTP}.}
+\end{figure} 
+
+A figura \ref{fig:ftp}, representa um Frame capturado que contém um cabeçalho referente à aplicação \textbf{FTP}. Deste modo na camada de transporte (TCP) conseguimos identificar a porta de atendimento bem como o overhead de transporte em bytes, que se encontram a sublinhado na figura \ref{fig:ftp}.
+
 
 \subsection{TFTP}
 
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.4]{tftp.png} 
+\end{center}
+\caption{\label{fig:tftp}Captura realizada aquando a utilização do protocolo \emph{TFTP}.}
+\end{figure} 
+
+A figura \ref{fig:tftp}, representa um Frame capturado que contém um cabeçalho referente à aplicação \textbf{FTP}. Deste modo na camada de transporte (UDP) conseguimos identificar a porta de atendimento bem como o overhead de transporte em bytes, que se encontram a sublinhado na figura \ref{fig:ftp}.
+
+
 \subsection{HTTP}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.4]{http.png} 
+\end{center}
+\caption{\label{fig:http}Captura realizada aquando a utilização do protocolo \emph{HTTP}.}
+\end{figure} 
+
+A figura \ref{fig:http}, representa um Frame capturado que contém um cabeçalho referente à aplicação \textbf{HTTP}. Deste modo na camada de transporte (TCP) conseguimos identificar a porta de atendimento bem como o overhead de transporte em bytes, que se encontram a sublinhado na figura \ref{fig:ftp}.
+
 
 \subsection{Nslookup}
 
+
+
 \subsection{SSH}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.4]{ssh.png} 
+\end{center}
+\caption{\label{fig:ssh}Captura realizada aquando a utilização do protocolo \emph{SSH}.}
+\end{figure} 
+
+A figura \ref{fig:ssh}, representa um Frame capturado que contém um cabeçalho referente à aplicação \textbf{SSH}. Deste modo na camada de transporte (TCP) conseguimos identificar a porta de atendimento bem como o overhead de transporte em bytes, que se encontram a sublinhado na figura \ref{fig:ssh}.
 
 
 \section{Questão 2}
