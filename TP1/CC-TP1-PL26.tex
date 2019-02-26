@@ -76,7 +76,7 @@ PL2, Grupo 6
 
 \subsection{HTTP}
 
-\subsection{Nslookup/DNS}
+\subsection{Nslookup}
 
 \subsection{SSH}
 
@@ -85,10 +85,19 @@ PL2, Grupo 6
 
 \section{Questão 3}
 \subsection{(i) uso da camada de transporte}
+Perante os resultados obtidas na Questão 1, podemos concluir que, tanto o FTP, como o HTTP e o SSH utilizam o TCP como camada de transporte, enquanto o TFTP utiliza o UDP para essa função.
+
+Isto leva-nos a concluir que no TFTP existe um menor controlo do envio dos dados por parte da camada de transporte, visto este ser antes controlado pela camada de aplicação.
+
+No caso das restantes aplicações em causa, como é usado o TCP sabemos que o transporte, sendo orientado à conexão, é realizado de forma fiável, pois efetua também controlo de erros, de fluxo e de congestão.
 
 \subsection{(ii) eficiência na transferência}
+No protocolo de aplicação TFTP (uso do UDP),
 
 \subsection{(iii) complexidade}
+Perante o observado, por exemplo na Questão 2, concluimos que a complexidade de usar o UDP é consideravelmente inferior à de usar o TCP. Nesse caso, o FTP necessita de estabelecer conexão, transferir os dados, e realizar a desconexão. Ainda na mesma questão, conseguimos concluir que o TFTP, através do UDP, apenas realiza a transferência dos dados.
+
+...
 
 \subsection{(iv) segurança}
 
