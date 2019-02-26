@@ -162,20 +162,22 @@ A figura \ref{fig:nslook}, representa um Frame capturado que contém um cabeçal
 A figura \ref{fig:ssh}, representa um Frame capturado que contém um cabeçalho referente à aplicação \textbf{SSH}. Deste modo na camada de transporte (TCP) conseguimos identificar a porta de atendimento bem como o overhead de transporte em bytes, que se encontram a sublinhado na figura \ref{fig:ssh}.
 
 
+\newpage
+
 \section{Questão 2}
 
 Nas duas figuras seguintes, o endereço \textbf{10.1.1.1} identifica o \textbf{Servidor1} da LAN1, e o endereço \textbf{10.4.4.1} identifica o \textbf{Cliente1}, host da LAN4 da topologia em causa.
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[scale=0.5]{2_ftp.png}
+\includegraphics[scale=0.70]{2_ftp.png}
 \end{center}
 \caption{\label{fig:ssh}Diagrama temporal das transferências do file1 por \textbf{FTP}.}
 \end{figure}
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[scale=0.5]{2_tftp.png}
+\includegraphics[scale=0.55]{2_tftp.png}
 \end{center}
 \caption{\label{fig:ssh}Diagrama temporal das transferências do file1 por \textbf{TFTP}.}
 \end{figure}
@@ -212,12 +214,14 @@ No protocolo de aplicação SFTP, quando a transferência é executada a partir 
 No protocolo de aplicação FTP, quando a transferência é executada a partir do Cliente1 tudo ocorre sem erros. No caso em que a transferência é executada a partir do Alfa, ocorre apenas um segmento duplicado, com tudo o resto a funcionar dentro do que se pretende.
 \begin{figure}[H]
 \begin{center}
-\includegraphics[scale=0.40]{4_ftp.png}
+\includegraphics[scale=0.35]{4_ftp.png}
 \end{center}
 \caption{\label{fig:ssh}Ocorrência de um duplicado via TCP.}
 \end{figure}
 
-No protocolo de aplicação HTTP, tanto na transferência para o Cliente1 como para Alfa acontecem bastantes inconvenientes. No Cliente 1:
+No protocolo de aplicação HTTP, tanto na transferência para o Cliente1 como para Alfa acontecem bastantes inconvenientes.
+
+No Cliente 1:
 
 	- Alguns Fast Restransmit;
 
@@ -225,11 +229,11 @@ No protocolo de aplicação HTTP, tanto na transferência para o Cliente1 como p
 
 No Alfa:
 
-	- Tudo o que ocorre no Cliente1
+	- Tudo o que ocorre no Cliente1;
 
 	- Ocorre um RST, indica que a conexão TCP vai ser reinicializada.
 
-
+\newpage
 
 \section{Conclusões}
 
