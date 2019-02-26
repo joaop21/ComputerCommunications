@@ -207,6 +207,26 @@ Quanto às comunicações feitas sobre UDP, estas são identificadas através de
 \section{Questão 4}
 No protocolo de aplicação TFTP, quando a transferência é executada a partir do Cliente1 tudo ocorre sem erros. Quando tal é executada a partir do Alfa, a porta do destino fica inalcançável, significando isto que foi detetado algum erro ... (ANALISAR BEM O WIRESHARK, TENHO DUVIDAS DISTO)
 
+No protocolo de aplicação SFTP(usei o ficheiro cliente1 !!!!!!!!!!!), quando a transferência é executada a partir do Cliente1 ocorre um erro na aplicação/transmissão(???), não conseguindo o Servidor1 capturar o segmento. Com a intenção de que o Cliente1 retransmita o segmento, o Servidor1 envia um ACK duplicado. Após a receção deste, é inicializada a retransmissão via TCP. (SE FOR PARA TIRAR, TIRAR TAMBEM A IMAGEM) No caso em que a transferência é executada a partir do Alfa, estes erros ocorrem com mais abundância, tal como seria esperado visto esta ligação ter sido construída para tal.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.40]{4_sftp.png}
+\end{center}
+\caption{\label{fig:ssh}Ocorrência de um erro na transmissão de um pacote via TCP.}
+\end{figure}
+
+No protocolo de aplicação FTP, quando a transferência é executada a partir do Cliente1 tudo ocorre sem erros. No caso em que a transferência é executada a partir do Alfa, ocorre um erro na aplicação/transmissão(???), sendo que nesta aplicação não é realizada a retransmissão (WHYYY????).
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.40]{4_ftp.png}
+\end{center}
+\caption{\label{fig:ssh}Ocorrência de um erro na transmissão de um pacote via TCP.}
+\end{figure}
+
+No protocolo de aplicação HTTP, tanto na transferência a partir do Cliente1 como a partir do Alfa acontecem erros na aplicação/transmissão(???). (Cliente 1: Existem Fast Restransmit mas antes só aparecem dois ACKs duplicados, nos slides diz que devem ser três para isto acontecer ... aparece o Out-of-Order tambem ...) (Alfa: tem cenas como o Cliente1, mas aparece algo diferente no No25, é um RST e faz isto: -> indica que a conexão TCP vai ser reinicializada)
+
 
 
 \section{Conclusões}
