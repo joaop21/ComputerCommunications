@@ -43,6 +43,8 @@ class AgenteUDP implements Runnable{
             }
         } catch(Exception e){
             e.printStackTrace();
+        } finally{
+            serverSocket.close();
         }
     }
 }
