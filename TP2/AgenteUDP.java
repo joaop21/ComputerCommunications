@@ -1,50 +1,46 @@
+import java.io.*;
 import java.net.*;
 
-public class AgenteUDP extends Thread {
+class AgenteUDP implements Runnable{
 
-    private DatagramSocket socket;
-    private boolean running;
-    private byte[] buf = new byte[256]; // valor a ver////////////////
+    TransfereCC transfCC;
+    DatagramSocket serverSocket ;
+    byte[] receiveData = new byte[1024];
+    byte[] sendData = new byte[1024];
 
-    public AgenteUDP() throws SocketException{
-        socket = new DatagramSocket(7777); // localhost machine port
+    public AgenteUDP(TransfereCC tfcc) throws Exception{
+        transfCC = tfcc;
+        serverSocket = new DatagramSocket(7777);
     }
 
-    public DatagramPacket receivePDU(){
-        DatagramPacket packet = null;
+    public void sendPDU(String sentence,InetAddress IPAddress, int port){
         try{
-            packet = new DatagramPacket(buf, buf.length); // cria dimensao de segmento a receber
-            socket.receive(packet);
+            sendData = sentence.getBytes();
+            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+            serverSocket.send(sendPacket);
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+    }
 
-            String received = new String(packet.getData(), 0, packet.getLength()); // 0 é offset
+    /**
+    * Isto funciona como um server que recebe packets
+    */
+    public void run(){
+        try{
+            while(true){
+                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+                serverSocket.receive(receivePacket);
 
-            if (received.equals("end")){ //// perguntar ao stor
-                running = false;
-                // continue;
+                String data = new String( receivePacket.getData());
+                InetAddress ipAddress = receivePacket.getAddress();
+                int port = receivePacket.getPort();
+
+                transfCC.recebePDU(data,ipAddress,port);
+
+                sendPDU(data,ipAddress,port);
+
             }
-
-        } catch(Exception e){
-            e.printStackTrace();
-        } finally{
-            return packet;
-        }
-    }
-
-    public void sendPDU(DatagramPacket packet){
-        try{
-            socket.send(packet);
-        } catch(Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    public void closeSocket(){
-        socket.close();
-    }
-
-    public static void main(String[] args) {
-        try{
-            new Thread(new AgenteUDP()).run();
         } catch(Exception e){
             e.printStackTrace();
         }
