@@ -20,9 +20,9 @@
 
 \begin{document}
 \mainmatter
-\title{TP1 - Protocolos da Camada de Transporte}
+\title{TP3 - Serviço de Resolução de Nomes (DNS)}
 
-\titlerunning{TP1 - Protocolos da Camada de Transporte}
+\titlerunning{TP3 - Serviço de Resolução de Nomes (DNS)}
 
 \author{Diogo Braga \and João Silva}
 
@@ -42,11 +42,44 @@ PL2, Grupo 6
 \section{Questões e Respostas}
 
 \subsection{\textbf{Qual o conteúdo do ficheiro /etc/resolv.conf e para que serve essa informação?}}
-\textbf{R:} 
+\textbf{R:} Este ficheiro contém o nome do domínio de procura e os servidores que respondem a este nome. O domínio corresponde ao nome do domínio local. O nameserver é responsável pelo endereço de internet pela qual o \textit{resolver} irá interrogar.
 
 \subsection{\textbf{Os servidores www.google.pt. e www.google.com. têm endereços IPv6? Se sim, quais?}}
-\textbf{R:} 
+\textbf{R:} Como mostra a figura \ref{fig:1b}, realizando o comando \textbf{dig www.google.pt.} é possível verificar que o este servidor possui endereços IPv6. De igual forma, realizando o comando \textbf{dig www.google.com.} é possível concluir que este servidor também possui endereços IPv6. Tais são identificados através do Resource Record \textbf{AAAA}.
 
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.4]{1b.png}
+\end{center}
+\caption{\label{fig:1b}Resultado da execução do comando \textbf{dig}}
+\end{figure}
+
+\subsection{\textbf{Quais os servidores de nomes definidos para os domínios: "ccg.pt.", "pt." e "."?}}
+\textbf{R:} Tal como pode ser verificado na figura \ref{fig:1c1}, no domínio \textbf{ccg.pt.}, os nomes definidos para os servidores são \textbf{ns1.ccg.pt.} e \textbf{ns3.ccg.pt.}. Tal é verificável através do Resource Record \textbf{NS}.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.4]{1c1.png}
+\end{center}
+\caption{\label{fig:1c1}Resultado da execução do comando \textbf{dig}}
+\end{figure}
+
+Quanto aos domínios \textbf{pt.} e \textbf{.}, estes não possuem servidores de nomes definidos porque definem o início de uma zona e todos os seus parâmetros. Tal pode ser verificado na figura \ref{fig:1c2} e \ref{fig:1c3}, respetivamente.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.4]{1c2.png}
+\end{center}
+\caption{\label{fig:1c2}Resultado da execução do comando \textbf{dig}}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.4]{1c3.png}
+\end{center}
+\caption{\label{fig:1c3}Resultado da execução do comando \textbf{dig}}
+\end{figure}
 
 
 \end{document}
