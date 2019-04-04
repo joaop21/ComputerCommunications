@@ -44,57 +44,90 @@ PL2, Grupo 6
 \subsection{\textbf{Qual o conteúdo do ficheiro /etc/resolv.conf e para que serve essa informação?}}
 \textbf{R:} Este ficheiro contém o nome do domínio de procura e os servidores que respondem a este nome. O domínio corresponde ao nome do domínio local. O nameserver é responsável pelo endereço de internet pela qual o \textit{resolver} irá interrogar.
 
+
 \subsection{\textbf{Os servidores www.google.pt. e www.google.com. têm endereços IPv6? Se sim, quais?}}
-\textbf{R:} Como mostra a figura \ref{fig:1b}, realizando o comando \textbf{dig www.google.pt.} é possível verificar que o este servidor possui endereços IPv6. De igual forma, realizando o comando \textbf{dig www.google.com.} é possível concluir que este servidor também possui endereços IPv6. Tais são identificados através do Resource Record \textbf{AAAA}.
-
-
-\begin{figure}[H]
-\begin{center}
-\includegraphics[scale=0.4]{1b1.png}
-\end{center}
-\caption{\label{fig:1b1}Resultado da execução do comando \textbf{dig}}
-\end{figure}
+\textbf{R:} Como mostra a figura \ref{fig:1b1}, utilizando a ferramenta \textbf{dig} para interrogar sobre o servidor \textbf{www.google.pt.}, e reparando no resource record definido como \textbf{AAAA}, é possível verificar que este possui endereços IPv6 nos servidores ns2,ns1,ns3 e ns4.
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[scale=0.4]{1b2.png}
+\includegraphics[scale=0.5]{2_1.png}
 \end{center}
-\caption{\label{fig:1b2}Resultado da execução do comando \textbf{dig}}
+\caption{\label{fig:1b1}Dig \textbf{www.google.pt.}}
 \end{figure}
+
+
+Fazendo o mesmo para o servidor \textbf{www.google.com.}, é possível verificar que também existem endereços IPv6. Estes endereços são os mesmos que os apresentados para o www.google.pt..
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.5]{2_2.png}
+\end{center}
+\caption{\label{fig:1b1}Dig \textbf{www.google.com.}}
+\end{figure}
+
 
 \subsection{\textbf{Quais os servidores de nomes definidos para os domínios: "ccg.pt.", "pt." e "."?}}
-\textbf{R:} Tal como pode ser verificado na figura \ref{fig:1c1}, no domínio \textbf{ccg.pt.}, os nomes definidos para os servidores são \textbf{ns1.ccg.pt.} e \textbf{ns3.ccg.pt.}. Tal é verificável através do Resource Record \textbf{NS}.
+\textbf{R:} Tal como pode ser verificado na figura \ref{fig:31}, no domínio \textbf{ccg.pt.}, os nomes definidos para os servidores são \textbf{ns1.ccg.pt.} e \textbf{ns3.ccg.pt.}. Tal é verificável através do resource record definido \textbf{NS}.
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[scale=0.4]{1c1.png}
+\includegraphics[scale=0.6]{3_1.png}
 \end{center}
-\caption{\label{fig:1c1}Resultado da execução do comando \textbf{dig}}
+\caption{\label{fig:31}Nslookup NS \textbf{ccg.pt.}}
 \end{figure}
 
-Quanto aos domínios \textbf{pt.} e \textbf{.}, estes não possuem servidores de nomes definidos porque definem o início de uma zona e todos os seus parâmetros. Tal pode ser verificado na figura \ref{fig:1c2} e \ref{fig:1c3}, respetivamente.
+Quanto ao domínio \textbf{pt.}, os nomes definidos para os servidores estão definidos dentro da secção vermelha representada na figura \ref{fig:32}.
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[scale=0.4]{1c2.png}
+\includegraphics[scale=0.6]{3_2.png}
 \end{center}
-\caption{\label{fig:1c2}Resultado da execução do comando \textbf{dig}}
+\caption{\label{fig:32}Nslookup NS \textbf{pt.}}
 \end{figure}
 
+Na figura \ref{fig:33} é possível concluir quais são os nomes definidos para os servidores do domínio \textbf{.}. Tais estão representados na secção vermelha.
+
 \begin{figure}[H]
 \begin{center}
-\includegraphics[scale=0.4]{1c3.png}
+\includegraphics[scale=0.6]{3_3.png}
 \end{center}
-\caption{\label{fig:1c3}Resultado da execução do comando \textbf{dig}}
+\caption{\label{fig:33}Nslookup NS \textbf{.}}
 \end{figure}
 
 
 \subsection{\textbf{Existe o domínio eureka.software.? Será que eureka.software. é um host?}}
-\textbf{R:}
+\textbf{R:} Como é possível verificar na figura \ref{fig:4}, as linhas verdes demonstram que existe o domínio \textbf{eureka.software.}, pois este possui resource records definidos como NS. Nesta secção estão, então, os nomes dos hosts do servidor DNS autoritativo do domínio.
+
+Na mesma figura, a linha vermelha mostra que o \textbf{eureka.software.} também é um host, pois este possui um resource record definido como A, que significa que eureka.software é um nome de um host, e que 34.214.90.141 é o endereço IP associado.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{4.png}
+\end{center}
+\caption{\label{fig:4}Dig \textbf{eureka.software.}}
+\end{figure}
 
 
 \subsection{\textbf{Qual é o servidor DNS primário definido para o domínio ami.pt.? Este servidor primário (master) aceita queries recursivas? Porquê?}}
-\textbf{R:}
+\textbf{R:} O servidor primário do domínio ami.pt. pode ser revelado executando a ferramenta nslookup e estabelecendo como filtro o tipo \textbf{SOA}(Start Of Authority), que define o início de uma zona e todos os seus parâmetros.
+
+Pela figura \ref{fig:5}, é possível verificar o campo \textbf{origin}, que tem como correspondência o domínio \textbf{ns1.dot2web.com}, sendo este o definido como servidor DNS primário.
+
+Concluimos que este servidor aceita queries recursivas, pois efetuando o \textbf{dig ns1.dot2web.com}, é possível verificar a presença das flags \textbf{RD Recursion Desired} e \textbf{RA Recursion Available} na figura \ref{fig:52}, sublinhado a vermelho.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{5.png}
+\end{center}
+\caption{\label{fig:5}Nslookup SOA \textbf{ami.pt.}}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{5_2.png}
+\end{center}
+\caption{\label{fig:52}Dig \textbf{ns1.dot2web.com}}
+\end{figure}
 
 
 \subsection{\textbf{Obtenha uma resposta "autoritativa" para a questão anterior.}}
@@ -102,15 +135,52 @@ Quanto aos domínios \textbf{pt.} e \textbf{.}, estes não possuem servidores de
 
 
 \subsection{\textbf{Onde são entregues as mensagens dirigidas a marcelo@presidencia.pt ? E a guterres@onu.org?}}
-\textbf{R:}
+\textbf{R:} Como é possível verificar na figura \ref{fig:71}, as mensagens dirigidas a marcelo@presidencia.pt serão entregues, em primeiro caso, a \textbf{mail2.presidencia.pt} e, caso este se encontre indisponível, serão entregues a \textbf{mail.presidencia.pt}. Para tal conclusão definimos o tipo \textbf{MX}, que filtra os nomes dos servidores de e-mail associados ao nome do domínio.
+
+Importante referir que o servidor \textbf{mail2} tem prioridade em relação ao servidor \textbf{mail}, pois o primeiro aqui na frase referenciado tem prioridade 10 enquanto o segundo tem prioridade 50. Tal acontece porque quanto menor for o número, maior é a prioridade.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{7_1.png}
+\end{center}
+\caption{\label{fig:71}Nslookup MX \textbf{presidencia.pt}}
+\end{figure}
+
+Por outro lado, e definindo de igual modo o tipo \textbf{MX} como filtro, as mensagens dirigidas a guterres@onu.org serão entregues a \textbf{mail.onu.org}. Neste caso só existe uma possibilidade logo não existe opção a tomar como no caso anterior. Tal é possível verificar na figura \ref{fig:72}.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{7_1.png}
+\end{center}
+\caption{\label{fig:72}Nslookup MX \textbf{onu.org}}
+\end{figure}
 
 
 \subsection{\textbf{Que informação é possível obter acerca de www.whitehouse.gov? Qual é o endereço IPv4 associado?}}
-\textbf{R:}
+\textbf{R:} Tal como mostra a figura \ref{fig:8} em baixo representada, a informação possível de obter é o endereço IP associado a um host. Tal é possível concluir devido ao resource record apresentado \textbf{(A)}. Devido a ser A ao invês de AAAA, concluimos que estamos perante IPv4. O endereço associado é, portanto, o 104.83.50.153.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{8.png}
+\end{center}
+\caption{\label{fig:8}Dig \textbf{www.whitehouse.gov}}
+\end{figure}
 
 
 \subsection{\textbf{Consegue interrogar o DNS sobre o endereço IPv6 2001:690:a00:1036:1113::247 usando algum dos clientes DNS? Que informação consegue obter? Supondo que teve problemas com esse endereço, consegue obter um contacto do responsável por esse IPv6?}}
-\textbf{R:}
+\textbf{R:} Utilizando a ferramenta nslookup e o filtro AAAA, resource record que identifica o IPv6, foi possível concluir qual o domínio a este associado.
+
+A informação obtida foi, portanto, o nome dos servidores associados ao domínio, o endereço internet associado a cada servidor, e também como o endereço IPv6 associado a cada servidor.
+
+Tendo problemas com esse endereço, é possível contactar o servidor web \textbf{www.fccn.pt}, que é um contacto do responsável pelo IPv6 referenciado no enunciado.
+
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{9.png}
+\end{center}
+\caption{\label{fig:9}Nslookup AAAA \textbf{2001:690:a00:1036:1113::247}}
+\end{figure}
 
 
 \subsection{\textbf{Os secundários usam um mecanismo designado por "Transferência de zona" para se atualizarem automaticamente a partir do primário, usando os parâmetros definidos no Record do tipo SOA do domínio. Descreve sucintamente esse mecanismo com base num exemplo concreto (ex: di.uminho.pt ou o domínio cc.pt que vai ser criado na topologia virtual).}}
