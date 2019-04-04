@@ -1,0 +1,24 @@
+;
+; BIND reverse data file for local loopback interface
+;
+$TTL    604800
+1.1.10.in-addr.arpa.       IN      SOA     dns.cc.pt. grupo26.cc.pt. (
+                              1         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+	IN	NS	Servidor1.cc.pt.
+	IN	NS	Servidor2.cc.pt.
+	IN	NS	Servidor3.cc.pt.
+
+$ORIGIN	1.1.10.in-addr.arpa.
+1	IN	PTR	Servidor1.cc.pt.
+1	IN	PTR	dns.cc.pt.
+2	IN	PTR	Servidor2.cc.pt.
+2	IN	PTR	mail2.cc.pt.
+2	IN	PTR	pop.cc.pt.
+2	IN	PTR	imap.cc.pt.
+3	IN	PTR	Servidor3.cc.pt.
+3	IN	PTR	www.cc.pt.
+3	IN	PTR	mail.cc.pt.

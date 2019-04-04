@@ -1,0 +1,17 @@
+;
+; BIND reverse data file for local loopback interface
+;
+$TTL    604800
+2.2.10.in-addr.arpa.       IN      SOA     dns.cc.pt. grupo26.cc.pt. (
+                              1         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+	IN	NS	Urano.cc.pt.
+	IN	NS	dns.cc.pt.
+$ORIGIN 2.2.10.in-addr.arpa.
+1       IN      PTR     Plutao.cc.pt.
+2       IN      PTR     Neptuno.cc.pt.
+3       IN      PTR     Urano.cc.pt.
+
