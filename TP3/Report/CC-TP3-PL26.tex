@@ -56,6 +56,8 @@ PL2, Grupo 6
 \end{figure}
 
 
+\newpage
+
 Fazendo o mesmo para o servidor \textbf{www.google.com.}, é possível verificar que também existem endereços IPv6. Estes endereços são os mesmos que os apresentados para o www.google.pt..
 
 \begin{figure}[H]
@@ -76,6 +78,9 @@ Fazendo o mesmo para o servidor \textbf{www.google.com.}, é possível verificar
 \caption{\label{fig:31}Nslookup NS \textbf{ccg.pt.}}
 \end{figure}
 
+
+\newpage
+
 Quanto ao domínio \textbf{pt.}, os nomes definidos para os servidores estão definidos dentro da secção vermelha representada na figura \ref{fig:32}.
 
 \begin{figure}[H]
@@ -84,6 +89,8 @@ Quanto ao domínio \textbf{pt.}, os nomes definidos para os servidores estão de
 \end{center}
 \caption{\label{fig:32}Nslookup NS \textbf{pt.}}
 \end{figure}
+
+\newpage
 
 Na figura \ref{fig:33} é possível concluir quais são os nomes definidos para os servidores do domínio \textbf{.}. Tais estão representados na secção vermelha.
 
@@ -94,6 +101,8 @@ Na figura \ref{fig:33} é possível concluir quais são os nomes definidos para 
 \caption{\label{fig:33}Nslookup NS \textbf{.}}
 \end{figure}
 
+
+\newpage
 
 \subsection{\textbf{Existe o domínio eureka.software.? Será que eureka.software. é um host?}}
 \textbf{R:} Como é possível verificar na figura \ref{fig:4}, as linhas verdes demonstram que existe o domínio \textbf{eureka.software.}, pois este possui resource records definidos como NS. Nesta secção estão, então, os nomes dos hosts do servidor DNS autoritativo do domínio.
@@ -113,7 +122,7 @@ Na mesma figura, a linha vermelha mostra que o \textbf{eureka.software.} também
 
 Pela figura \ref{fig:5}, é possível verificar o campo \textbf{origin}, que tem como correspondência o domínio \textbf{ns1.dot2web.com}, sendo este o definido como servidor DNS primário.
 
-Concluimos que este servidor aceita queries recursivas, pois efetuando o \textbf{dig ns1.dot2web.com}, é possível verificar a presença das flags \textbf{RD Recursion Desired} e \textbf{RA Recursion Available} na figura \ref{fig:52}, sublinhado a vermelho.
+Concluimos que este servidor aceita queries recursivas, pois efetuando o \textbf{dig ns1.dot2web.com}, é possível verificar a presença das flags \textbf{RD Recursion Desired} e \textbf{RA Recursion Available} na figura \ref{fig:521}, sublinhado a vermelho.
 
 \begin{figure}[H]
 \begin{center}
@@ -124,15 +133,23 @@ Concluimos que este servidor aceita queries recursivas, pois efetuando o \textbf
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[scale=0.6]{5_2.png}
+\includegraphics[scale=0.6]{5_1.png}
 \end{center}
-\caption{\label{fig:52}Dig \textbf{ns1.dot2web.com}}
+\caption{\label{fig:521}Dig \textbf{ns1.dot2web.com}}
 \end{figure}
 
 
-\subsection{\textbf{Obtenha uma resposta "autoritativa" para a questão anterior.}}
-\textbf{R:}
+\newpage
 
+\subsection{\textbf{Obtenha uma resposta "autoritativa" para a questão anterior.}}
+\textbf{R:} Uma resposta autoritativa, como se pode verificar na figura \ref{fig:522}, pode ser o nameserver \textbf{ns2.dot2web.com.}.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{5_2.png}
+\end{center}
+\caption{\label{fig:522}Nslookup SOA \textbf{ami.pt.}}
+\end{figure}
 
 \subsection{\textbf{Onde são entregues as mensagens dirigidas a marcelo@presidencia.pt ? E a guterres@onu.org?}}
 \textbf{R:} Como é possível verificar na figura \ref{fig:71}, as mensagens dirigidas a marcelo@presidencia.pt serão entregues, em primeiro caso, a \textbf{mail2.presidencia.pt} e, caso este se encontre indisponível, serão entregues a \textbf{mail.presidencia.pt}. Para tal conclusão definimos o tipo \textbf{MX}, que filtra os nomes dos servidores de e-mail associados ao nome do domínio.
@@ -150,7 +167,7 @@ Por outro lado, e definindo de igual modo o tipo \textbf{MX} como filtro, as men
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[scale=0.6]{7_1.png}
+\includegraphics[scale=0.6]{7_2.png}
 \end{center}
 \caption{\label{fig:72}Nslookup MX \textbf{onu.org}}
 \end{figure}
@@ -184,7 +201,26 @@ Tendo problemas com esse endereço, é possível contactar o servidor web \textb
 
 
 \subsection{\textbf{Os secundários usam um mecanismo designado por "Transferência de zona" para se atualizarem automaticamente a partir do primário, usando os parâmetros definidos no Record do tipo SOA do domínio. Descreve sucintamente esse mecanismo com base num exemplo concreto (ex: di.uminho.pt ou o domínio cc.pt que vai ser criado na topologia virtual).}}
-\textbf{R:}
+\textbf{R:} Os servidores secundários são tidos como "backups" dos servidores primários, e como tal estes necessitam de se atualizar com o conteúdo do primário periodicamente, de forma a conterem dados consistentes. Para tal, existem alguns parâmetros definidos no Record do tipo SOA do domínio.
+
+Tendo em conta o exemplo do domínio cc.pt criado na topologia virtual, e em baixo disponibilizado em formato de imagem, é possível verificar os tais parâmetros definidos como tempo para atualização dos dados.
+
+O campo \textbf{serial} incrementa quando os dados do servidor primário são modificados, de modo que depois o servidor secundário consiga saber quando o servidor primário foi alterado e deve ser recarregado.
+
+O campo \textbf{refresh} demonstra o número de segundos entre as solicitações de atualização do servidor secundário. Neste caso, 604800 segundos = 7 dias.
+
+O campo \textbf{retry} representa o número de segundos que o servidor secundário irá esperar antes de tentar novamente quando a última tentativa falhar. Neste caso, 86400 segundos = 1 dia.
+
+O campo \textbf{expire} mostra o número de segundos que o secundário irá esperar antes de considerar os dados antigos se não conseguirem alcançar o servidor de nome principal. Neste caso, 2419200 horas = 100800 dias.
+
+Para terminar, o campo \textbf{negative cache TTL} especifica o número de segundos que um nome de domínio é armazenado em cache localmente antes da expirar e retorna aos servidores de nomes oficiais para obter informações atualizadas. Neste caso, 86400 segundos = 1 dia.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.6]{10.png}
+\end{center}
+\caption{\label{fig:10}\textbf{db.cc.pt}}
+\end{figure}
 
 
 \newpage
