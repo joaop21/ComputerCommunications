@@ -1,12 +1,37 @@
 import java.net.*;
+import java.io.*;
 
 public class TransfereCCcmd{
 
-    public static void start(){
+    public static void help(){
+        System.out.println(
+            "*****************************************************************" + "\n" +
+            "*                                                               *" + "\n" +
+            "*  -help : Displays the command information.                    *" + "\n" +
+            "*  -put [file] : Makes the file available for download.         *" + "\n" +
+            "*  -get [file] [address] : Downloads the file from an address.  *" + "\n" +
+            "*                                                               *" + "\n" +
+            "*****************************************************************"
+        );
+    }
+
+    public static void get(String ficheiro, String address){
         try{
-            Thread t = new Thread(new TransfereCC());
-            t.setDaemon(true);
-            t.run();
+            File f = new File(ficheiro);
+            new Thread(new TransfereCC(f)).run();
+
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public static void put(String ficheiro){
+        try{
+            File f = new File(ficheiro);
+            if(f.exists() && !f.isDirectory())
+                new Thread(new TransfereCC(f)).run();
+            else
+                System.out.println("File doesn't exist.");
 
         } catch(Exception e){
             e.printStackTrace();
@@ -14,24 +39,19 @@ public class TransfereCCcmd{
     }
 
 
-
-
     public static void main(String[] args) {
             switch(args[0]){
-                case "start":
-                        start();
+                case "-help": // modus operandi
+                        help();
                         break;
-                case "stop":
-                        // pára o servidor
+                case "-get": // download
+                        get(args[1], args[2]);
                         break;
-                case "get":
-                        // download
-                        break;
-                case "put":
-                        // upload
+                case "-put": // upload
+                        put(args[1]);
                         break;
                 default:
-                    System.out.println("Dados Errados.");
+                    System.out.println("Unknown Operation.");
                     break;
             }
     }

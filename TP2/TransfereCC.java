@@ -1,10 +1,13 @@
 import java.net.*;
+import java.io.*;
 
 public class TransfereCC extends Thread {
     private AgenteUDP agente;
+    private File fich;
 
-    public TransfereCC() throws SocketException,Exception{
+    public TransfereCC(File f) throws SocketException,Exception{
         this.agente = new AgenteUDP(this);
+        this.fich = f;
     }
 
     public void recebePDU(String data, InetAddress ipAddress, int port){
