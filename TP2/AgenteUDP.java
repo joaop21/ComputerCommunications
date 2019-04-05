@@ -38,6 +38,8 @@ class AgenteUDP implements Runnable{
 
                 transfCC.recebePDU(data,ipAddress,port);
 
+                System.out.println("MSG:" + "\n" + ipAddress + " " + port + "\n");
+
                 sendPDU(data,ipAddress,port);
 
             }

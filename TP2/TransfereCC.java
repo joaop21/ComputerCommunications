@@ -20,12 +20,4 @@ public class TransfereCC extends Thread {
         new Thread(agente).start();
 
     }
-
-    public static void main(String[] args) {
-            try{
-                new Thread(new TransfereCC()).run();
-            } catch(Exception e){
-                e.printStackTrace();
-            }
-    }
 }

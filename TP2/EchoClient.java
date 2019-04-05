@@ -21,7 +21,7 @@ public class EchoClient {
         return received;
     }
 
-    public void close() {
+    public void socketClose() {
         socket.close();
     }
 
@@ -30,6 +30,7 @@ public class EchoClient {
             EchoClient ec = new EchoClient();
             String res = ec.sendEcho("ola!");
             System.out.println(res + "\n");
+            ec.socketClose();
         } catch(Exception e){}
     }
 }
