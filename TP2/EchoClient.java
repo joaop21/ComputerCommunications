@@ -3,18 +3,20 @@ import java.net.*;
 public class EchoClient {
     private DatagramSocket socket;
     private InetAddress address;
+    private InetAddress addressDest;
 
     private byte[] buf;
 
     public EchoClient() throws Exception{
         socket = new DatagramSocket();
         address = InetAddress.getLocalHost();
+        addressDest = InetAddress.getByName("192.168.1.65");
     }
 
     public String sendEcho(String msg) throws Exception{
         PDU p = new PDU(7777, 7777, address.getHostAddress(), "192.168.1.65", "DATA", "teste de pdus");
         buf = p.serialize();
-        DatagramPacket packet = new DatagramPacket(buf, buf.length, address, 7777);
+        DatagramPacket packet = new DatagramPacket(buf, buf.length, addressDest, 7777);
         socket.send(packet);
         packet = new DatagramPacket(buf, buf.length);
         socket.receive(packet);
