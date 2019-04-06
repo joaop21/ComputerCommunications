@@ -4,17 +4,22 @@ import java.io.*;
 public class TransfereCC extends Thread {
     private AgenteUDP agente;
     private File fich;
+    private String filename;
 
     public TransfereCC(File f) throws SocketException,Exception{
         this.agente = new AgenteUDP(this);
         this.fich = f;
+        filename = f.getName();
     }
 
-    public void recebePDU(String data, InetAddress ipAddress, int port){
+    public void recebePDU(PDU p){
         // tranformar em pdu
         // alterar estado
-
-        agente.sendPDU(data,ipAddress,port); // isto é meramente indicativo só para funcionar
+        /**try{
+            agente.sendPDU(p.getData(),InetAddress.getByName(p.getSourceIP()),p.getSourcePort());
+        } catch(Exception e){
+            e.printStackTrace();
+        }*/
     }
 
     public void run(){

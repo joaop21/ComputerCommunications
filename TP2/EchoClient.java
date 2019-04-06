@@ -8,11 +8,12 @@ public class EchoClient {
 
     public EchoClient() throws Exception{
         socket = new DatagramSocket();
-        address = InetAddress.getByName("localhost");
+        address = InetAddress.getLocalHost();
     }
 
     public String sendEcho(String msg) throws Exception{
-        buf = msg.getBytes();
+        PDU p = new PDU(7777, 7777, address.getHostAddress(), "192.168.1.65", "DATA", "teste de pdus");
+        buf = p.serialize();
         DatagramPacket packet = new DatagramPacket(buf, buf.length, address, 7777);
         socket.send(packet);
         packet = new DatagramPacket(buf, buf.length);

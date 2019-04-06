@@ -2,15 +2,20 @@ import java.io.*;
 import java.net.*;
 
 class AgenteUDP implements Runnable{
-
     TransfereCC transfCC;
     DatagramSocket serverSocket ;
-    byte[] receiveData = new byte[1024];
-    byte[] sendData = new byte[1024];
+    byte[] receiveData = new byte[65527]; // tamanho máximo para dados
+    byte[] sendData = new byte[65527];
 
     public AgenteUDP(TransfereCC tfcc) throws Exception{
         transfCC = tfcc;
         serverSocket = new DatagramSocket(7777);
+    }
+
+    public Object deserializePDU(byte[] data) throws IOException, ClassNotFoundException {
+        ByteArrayInputStream in = new ByteArrayInputStream(data);
+        ObjectInputStream is = new ObjectInputStream(in);
+        return is.readObject();
     }
 
     public void sendPDU(String sentence,InetAddress IPAddress, int port){
@@ -32,15 +37,15 @@ class AgenteUDP implements Runnable{
                 DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
                 serverSocket.receive(receivePacket);
 
-                String data = new String( receivePacket.getData());
-                InetAddress ipAddress = receivePacket.getAddress();
-                int port = receivePacket.getPort();
+                byte[] data = receivePacket.getData();
+                //InetAddress ipAddress = receivePacket.getAddress();
+                //int port = receivePacket.getPort();
 
-                transfCC.recebePDU(data,ipAddress,port);
+                PDU p = (PDU) deserializePDU(data);
 
-                System.out.println("MSG:" + "\n" + ipAddress + " " + port + "\n");
+                transfCC.recebePDU(p);
 
-                sendPDU(data,ipAddress,port);
+                System.out.println("MSG:" + "\n" + p.getSourceIP() + " " + p.getSourcePort() + "\n");
 
             }
         } catch(Exception e){
