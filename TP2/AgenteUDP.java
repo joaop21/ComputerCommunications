@@ -4,7 +4,7 @@ import java.net.*;
 class AgenteUDP implements Runnable{
     TransfereCC transfCC;
     DatagramSocket serverSocket ;
-    byte[] receiveData = new byte[65527]; // tamanho máximo para dados
+    byte[] receiveData = new byte[65527]; // tamanho maximo para dados
     byte[] sendData = new byte[65527];
 
     public AgenteUDP(TransfereCC tfcc) throws Exception{

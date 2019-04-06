@@ -1,4 +1,5 @@
 import java.net.*;
+import java.util.*;
 
 public class EchoClient {
     private DatagramSocket socket;
@@ -9,8 +10,33 @@ public class EchoClient {
 
     public EchoClient() throws Exception{
         socket = new DatagramSocket();
-        address = InetAddress.getLocalHost();
+        address = InetAddress.getByName(activeIP());
         addressDest = InetAddress.getByName("192.168.1.65");
+    }
+
+    /**
+        Função que tira um IP duma interface ativa
+    */
+    public String activeIP(){
+        String ip = "";
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface iface = interfaces.nextElement();
+                // filters out 127.0.0.1 and inactive interfaces
+                if (iface.isLoopback() || !iface.isUp())
+                    continue;
+
+                Enumeration<InetAddress> addresses = iface.getInetAddresses();
+                while(addresses.hasMoreElements()) {
+                    InetAddress addr = addresses.nextElement();
+                    ip = addr.getHostAddress();
+                }
+            }
+            return ip;
+        } catch (SocketException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public String sendEcho(String msg) throws Exception{
