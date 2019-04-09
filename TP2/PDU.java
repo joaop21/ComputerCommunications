@@ -1,31 +1,39 @@
 import java.io.*;
 
 public class PDU implements Serializable{
-    private int sourcePort;
-    private int destinationPort;
-    private String sourceIP;
-    private String destinationIP;
-    private String type; // SYN,FYN,ACK,DATA...
+    private int sequence_number;
+    private int ack_number;
+    private int mss;
+    private Boolean syn;
+    private Boolean fin;
+    private Boolean ack;
+    private Boolean psh;
     private String data;
 
-    public PDU(int sp, int dp, String sip, String dip, String tp, String dt){
-        this.sourcePort = sp;
-        this.destinationPort = dp;
-        this.sourceIP = sip;
-        this.destinationIP = dip;
-        this.type = tp;
+    public PDU(int seq, int ack_n, int mss, Boolean syn, Boolean fin, Boolean ack,Boolean psh,String dt){
+        this.sequence_number = seq;
+        this.ack_number = ack_n;
+        this.mss = mss;
+        this.syn = syn;
+        this.fin = fin;
+        this.ack = ack;
+        this.psh = psh;
         this.data = dt;
     }
 
-    public int getSourcePort(){ return this.sourcePort; }
+    public int getSequenceNumber(){ return this.sequence_number; }
 
-    public int getDestinationPort(){ return this.destinationPort; }
+    public int getAckNumber(){ return this.ack_number; }
 
-    public String getSourceIP(){ return this.sourceIP; }
+    public int getMSS(){ return this.mss; }
 
-    public String getDestinationIP(){ return this.destinationIP; }
+    public Boolean getSYN(){ return this.syn; }
 
-    public String getType(){ return this.type; }
+    public Boolean getFIN(){ return this.fin; }
+
+    public Boolean getACK(){ return this.ack; }
+
+    public Boolean getPSH(){ return this.psh; }
 
     public String getData(){ return this.data; }
 

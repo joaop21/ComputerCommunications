@@ -11,7 +11,7 @@ public class EchoClient {
     public EchoClient() throws Exception{
         socket = new DatagramSocket();
         address = InetAddress.getByName(activeIP());
-        addressDest = InetAddress.getByName("192.168.1.65");
+        addressDest = InetAddress.getByName("172.26.39.154");
     }
 
     /**
@@ -40,7 +40,7 @@ public class EchoClient {
     }
 
     public String sendEcho(String msg) throws Exception{
-        PDU p = new PDU(7777, 7777, address.getHostAddress(), "192.168.1.65", "DATA", "teste de pdus");
+        PDU p = new PDU(0, 0, 1024, false, false, false, true,"OLA");
         buf = p.serialize();
         DatagramPacket packet = new DatagramPacket(buf, buf.length, addressDest, 7777);
         socket.send(packet);

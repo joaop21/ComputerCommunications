@@ -38,14 +38,14 @@ class AgenteUDP implements Runnable{
                 serverSocket.receive(receivePacket);
 
                 byte[] data = receivePacket.getData();
-                //InetAddress ipAddress = receivePacket.getAddress();
-                //int port = receivePacket.getPort();
+                InetAddress ipAddress = receivePacket.getAddress();
+                int port = receivePacket.getPort();
 
                 PDU p = (PDU) deserializePDU(data);
 
                 transfCC.recebePDU(p);
 
-                System.out.println("MSG:" + "\n" + p.getSourceIP() + " " + p.getSourcePort() + "\n");
+                System.out.println("MSG:" + "\n" + ipAddress + " " + port + "\n" + p.getData() + "\n");
 
             }
         } catch(Exception e){
