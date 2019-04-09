@@ -11,8 +11,8 @@ public class TransfereCC extends Thread {
 
     public TransfereCC(File f) throws SocketException,Exception{
         agente = new AgenteUDP(this);
-        this.upload = false;
-        this.download = true;
+        this.upload = true;
+        this.download = false;
         this.fich = f;
         this.filename = f.getName();
         destinationIP = "";
@@ -20,8 +20,8 @@ public class TransfereCC extends Thread {
 
     public TransfereCC(String file, String destip) throws SocketException,Exception{
         this.agente = new AgenteUDP(this);
-        this.upload = true;
-        this.download = false;
+        this.upload = false;
+        this.download = true;
         this.fich = null;
         this.filename = file;
         destinationIP = destip;
@@ -40,10 +40,13 @@ public class TransfereCC extends Thread {
     public void run(){
         try{
             // inicializa server que recebe packets
-            new Thread(agente).start();
+            Thread tagent = new Thread(agente);
+            tagent.start();
 
             if(this.download == true)
                 new Thread(new TransfereCCDownload(agente,destinationIP)).run();
+
+            tagent.interrupt();
         } catch(UnknownHostException e){
             e.printStackTrace();
         }
