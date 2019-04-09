@@ -7,7 +7,7 @@ public class TransfereCC extends Thread {
     private final boolean download;
     private File fich;
     private String filename;
-    private String DestinationIP;
+    String destinationIP;
 
     public TransfereCC(File f) throws SocketException,Exception{
         agente = new AgenteUDP(this);
@@ -15,6 +15,7 @@ public class TransfereCC extends Thread {
         this.download = true;
         this.fich = f;
         this.filename = f.getName();
+        destinationIP = "";
     }
 
     public TransfereCC(String file, String destip) throws SocketException,Exception{
@@ -23,7 +24,7 @@ public class TransfereCC extends Thread {
         this.download = false;
         this.fich = null;
         this.filename = file;
-        this.DestinationIP = destip;
+        destinationIP = destip;
     }
 
     public void recebePDU(PDU p){
@@ -37,9 +38,15 @@ public class TransfereCC extends Thread {
     }
 
     public void run(){
+        try{
+            // inicializa server que recebe packets
+            new Thread(agente).start();
 
-        // inicializa server que recebe packets
-        new Thread(agente).start();
+            if(this.download == true)
+                new Thread(new TransfereCCDownload(agente,destinationIP)).run();
+        } catch(UnknownHostException e){
+            e.printStackTrace();
+        }
 
     }
 }
