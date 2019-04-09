@@ -17,8 +17,7 @@ public class TransfereCCcmd{
 
     public static void get(String ficheiro, String address){
         try{
-            File f = new File(ficheiro);
-            new Thread(new TransfereCC(f)).run();
+            new Thread(new TransfereCC(ficheiro,address)).run();
 
         } catch(Exception e){
             e.printStackTrace();

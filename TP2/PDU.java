@@ -4,10 +4,10 @@ public class PDU implements Serializable{
     private int sequence_number;
     private int ack_number;
     private int mss;
-    private Boolean syn;
-    private Boolean fin;
-    private Boolean ack;
-    private Boolean psh;
+    private boolean syn;
+    private boolean fin;
+    private boolean ack;
+    private boolean psh;
     private String data;
 
     public PDU(int seq, int ack_n, int mss, Boolean syn, Boolean fin, Boolean ack,Boolean psh,String dt){

@@ -18,9 +18,9 @@ class AgenteUDP implements Runnable{
         return is.readObject();
     }
 
-    public void sendPDU(String sentence,InetAddress IPAddress, int port){
+    public void sendPDU(PDU segment,InetAddress IPAddress, int port){
         try{
-            sendData = sentence.getBytes();
+            sendData = segment.serialize();
             DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
             serverSocket.send(sendPacket);
         } catch(Exception e){
