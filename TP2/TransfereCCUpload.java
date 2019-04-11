@@ -12,7 +12,6 @@ class TransfereCCUpload extends Thread{
     public void recebePDU(PDU p){}
 
     public void run(){
-        PDU p = new PDU(0, 0, 1024, false, false, false, true,"OLA");
-        agente.sendPDU(p,addressDest,7777);
+        System.out.println("PDU from Host: " + this.addressDest);
     }
 }

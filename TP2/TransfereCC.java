@@ -11,6 +11,7 @@ public class TransfereCC extends Thread {
     private String filename;
     String destinationIP;
     Map<InetAddress,TransfereCCUpload> threads_upload = new HashMap<>();
+    TransfereCCDownload tfd;
 
     ////////////////////////// CONSTRUTORES //////////////////////////
     public TransfereCC(File f) throws SocketException,Exception{
@@ -41,9 +42,6 @@ public class TransfereCC extends Thread {
     public void recebePDU(DatagramPacket dp){
         byte[] data = dp.getData();
         InetAddress ipAddress = dp.getAddress();
-        int port = dp.getPort();
-
-        System.out.println("Host: " + ipAddress + "  Port: " + port);
 
         try{
 
@@ -64,8 +62,10 @@ public class TransfereCC extends Thread {
                     threads_upload.put(ipAddress,ntup);
                     ntup.recebePDU(p);
                 } else{
-
+                    tup.recebePDU(p);
                 }
+            } else{
+                tfd.recebePDU(p);
             }
 
         } catch(Exception e){
@@ -81,8 +81,10 @@ public class TransfereCC extends Thread {
             Thread agent = new Thread(agente);
             agent.start();
 
-            if(this.download == true)
-                new Thread(new TransfereCCDownload(agente,destinationIP)).run();
+            if(this.download == true){
+                tfd = new TransfereCCDownload(agente,destinationIP);
+                new Thread(tfd).run();
+            }
 
             agent.interrupt();
         } catch(UnknownHostException e){

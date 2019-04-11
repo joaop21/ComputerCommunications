@@ -9,6 +9,8 @@ class TransfereCCDownload extends Thread{
         this.addressDest = InetAddress.getByName(destip);
     }
 
+    public void recebePDU(PDU p){}
+
     public void run(){
         PDU p = new PDU(0, 0, 1024, false, false, false, true,"OLA");
         agente.sendPDU(p,addressDest,7777);
