@@ -12,12 +12,6 @@ class AgenteUDP implements Runnable{
         serverSocket = new DatagramSocket(7777);
     }
 
-    public Object deserializePDU(byte[] data) throws IOException, ClassNotFoundException {
-        ByteArrayInputStream in = new ByteArrayInputStream(data);
-        ObjectInputStream is = new ObjectInputStream(in);
-        return is.readObject();
-    }
-
     public void sendPDU(PDU segment,InetAddress IPAddress, int port){
         try{
             sendData = segment.serialize();
@@ -34,18 +28,11 @@ class AgenteUDP implements Runnable{
     public void run(){
         try{
             while(true){
-                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-                serverSocket.receive(receivePacket);
 
-                byte[] data = receivePacket.getData();
-                InetAddress ipAddress = receivePacket.getAddress();
-                int port = receivePacket.getPort();
+                DatagramPacket receivedPacket = new DatagramPacket(receiveData, receiveData.length);
+                serverSocket.receive(receivedPacket);
 
-                PDU p = (PDU) deserializePDU(data);
-
-                transfCC.recebePDU(p);
-
-                System.out.println("MSG:" + "\n" + ipAddress + " " + port + "\n" + p.getData() + "\n");
+                transfCC.recebePDU(receivedPacket);
 
             }
         } catch(Exception e){

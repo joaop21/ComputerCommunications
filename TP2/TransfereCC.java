@@ -8,6 +8,7 @@ public class TransfereCC extends Thread {
     private File fich;
     private String filename;
     String destinationIP;
+    //LinkedList<PDU> received = new LinkedList<>();
 
     public TransfereCC(File f) throws SocketException,Exception{
         agente = new AgenteUDP(this);
@@ -27,26 +28,40 @@ public class TransfereCC extends Thread {
         destinationIP = destip;
     }
 
-    public void recebePDU(PDU p){
-        // tranformar em pdu
-        // alterar estado
-        /**try{
-            agente.sendPDU(p.getData(),InetAddress.getByName(p.getSourceIP()),p.getSourcePort());
+    public Object deserializePDU(byte[] data) throws IOException, ClassNotFoundException {
+        ByteArrayInputStream in = new ByteArrayInputStream(data);
+        ObjectInputStream is = new ObjectInputStream(in);
+        return is.readObject();
+    }
+
+    public void recebePDU(DatagramPacket dp){
+        byte[] data = dp.getData();
+        InetAddress ipAddress = dp.getAddress();
+        int port = dp.getPort();
+
+        System.out.println("Host: " + ipAddress + "  Port: " + port);
+
+        try{
+            PDU p = (PDU) deserializePDU(data);
+            System.out.println("Data: " + p.getData());
         } catch(Exception e){
             e.printStackTrace();
-        }*/
+        }
+
+
+
     }
 
     public void run(){
         try{
             // inicializa server que recebe packets
-            Thread tagent = new Thread(agente);
-            tagent.start();
+            Thread agent = new Thread(agente);
+            agent.start();
 
             if(this.download == true)
                 new Thread(new TransfereCCDownload(agente,destinationIP)).run();
 
-            tagent.interrupt();
+            agent.interrupt();
         } catch(UnknownHostException e){
             e.printStackTrace();
         }
@@ -54,6 +69,11 @@ public class TransfereCC extends Thread {
     }
 }
 
+
+
+/**
+    Classe usada para quando é pretendido fazer download dum ficheiro
+*/
 class TransfereCCDownload extends Thread{
     AgenteUDP agente;
     private InetAddress addressDest;
