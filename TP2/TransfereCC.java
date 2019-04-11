@@ -1,5 +1,7 @@
 import java.net.*;
 import java.io.*;
+import java.util.Map;
+import java.util.HashMap;
 
 public class TransfereCC extends Thread {
     AgenteUDP agente;
@@ -8,8 +10,9 @@ public class TransfereCC extends Thread {
     private File fich;
     private String filename;
     String destinationIP;
-    //LinkedList<PDU> received = new LinkedList<>();
+    Map<InetAddress,TransfereCCUpload> threads_upload = new HashMap<>();
 
+    ////////////////////////// CONSTRUTORES //////////////////////////
     public TransfereCC(File f) throws SocketException,Exception{
         agente = new AgenteUDP(this);
         this.upload = true;
@@ -28,6 +31,7 @@ public class TransfereCC extends Thread {
         destinationIP = destip;
     }
 
+    ////////////////////////// RECEIVE //////////////////////////
     public Object deserializePDU(byte[] data) throws IOException, ClassNotFoundException {
         ByteArrayInputStream in = new ByteArrayInputStream(data);
         ObjectInputStream is = new ObjectInputStream(in);
@@ -42,16 +46,35 @@ public class TransfereCC extends Thread {
         System.out.println("Host: " + ipAddress + "  Port: " + port);
 
         try{
+
             PDU p = (PDU) deserializePDU(data);
-            System.out.println("Data: " + p.getData());
+
+            if(this.upload == true){
+                TransfereCCUpload tup = threads_upload.get(ipAddress);
+                if(tup == null){
+
+                    // cria um novo tranfereCC
+                    TransfereCCUpload ntup;
+                    ntup = new TransfereCCUpload(agente,ipAddress);
+
+                    // inicia thread
+                    new Thread(ntup).start();
+
+                    // insere no hashmap
+                    threads_upload.put(ipAddress,ntup);
+                    ntup.recebePDU(p);
+                } else{
+
+                }
+            }
+
         } catch(Exception e){
             e.printStackTrace();
         }
 
-
-
     }
 
+    ////////////////////////// RUN //////////////////////////
     public void run(){
         try{
             // inicializa server que recebe packets
@@ -66,25 +89,5 @@ public class TransfereCC extends Thread {
             e.printStackTrace();
         }
 
-    }
-}
-
-
-
-/**
-    Classe usada para quando é pretendido fazer download dum ficheiro
-*/
-class TransfereCCDownload extends Thread{
-    AgenteUDP agente;
-    private InetAddress addressDest;
-
-    public TransfereCCDownload(AgenteUDP agent, String destip) throws UnknownHostException{
-        agente = agent;
-        this.addressDest = InetAddress.getByName(destip);
-    }
-
-    public void run(){
-        PDU p = new PDU(0, 0, 1024, false, false, false, true,"OLA");
-        agente.sendPDU(p,addressDest,7777);
     }
 }
