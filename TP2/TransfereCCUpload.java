@@ -20,6 +20,10 @@ class TransfereCCUpload extends Thread{
         fis = new FileInputStream(fich);
     }
 
+    /*
+        Insere um PDU na lista ligada (ao fim por omissao) e acorda a thread
+    possivelmente bloqueada.
+    */
     public void recebePDU(PDU p){
         l.lock();
         try{
@@ -31,6 +35,10 @@ class TransfereCCUpload extends Thread{
         }
     }
 
+    /*
+        Vai à lista ligada caso esta tenha elementos (senao bloqueia), e retira
+    o próximo PDU  analisar.
+    */
     public PDU nextPDU(){
         l.lock();
         PDU p;
@@ -50,17 +58,14 @@ class TransfereCCUpload extends Thread{
         return null;
     }
 
-    public void sendFile(){
-        // teste a 1024 bytes
-        /**int file_length = file_byte.length;
-        for(int i = 0 , seq = 0; i < file_length ; i+= 1024, seq++){
-            byte[] data = new byte[1024];
-            for(int j = 0 ; (j < 1024) || (i+j < file_length) ; j++)
-                data[j] = file_byte[i + j];
+    /*
+        Pega no ficheiro divide-o e envia-o para o destino
 
-            PDU p = new PDU(0, 0, 1024, false, false, false, true,file_byte);
-            agente.sendPDU(p,addressDest,7777);
-        }*/
+        Precisa duma otimização para o caso de UDPs se perderem e
+    necessitarmos de reenviar
+    */
+    public void sendFile(){
+
         try{
             InputStreamReader isr = new InputStreamReader(fis);
             long file_length = file.length();
@@ -82,14 +87,19 @@ class TransfereCCUpload extends Thread{
                     lidos[0] = file_char[i];
                 }
             }
+            String data = new String(lidos);
+            PDU p = new PDU(seq, 0, 1024, false, false, false, true, data.getBytes());
+            agente.sendPDU(p,addressDest,7777);
             System.out.println(seq);
         } catch(Exception e){
             e.printStackTrace();
         }
 
-
     }
 
+    /*
+        Este método vai ter de ser otimizado
+    */
     public void run(){
 
         PDU p = nextPDU();

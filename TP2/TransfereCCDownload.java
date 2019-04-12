@@ -17,6 +17,10 @@ class TransfereCCDownload extends Thread{
         filename = file_name;
     }
 
+    /*
+        Insere um PDU na lista ligada (ao fim por omissao) e acorda a thread
+    possivelmente bloqueada.
+    */
     public void recebePDU(PDU p){
         l.lock();
         try{
@@ -28,6 +32,10 @@ class TransfereCCDownload extends Thread{
         }
     }
 
+    /*
+        Vai à lista ligada caso esta tenha elementos (senao bloqueia), e retira
+    o próximo PDU  analisar.
+    */
     public PDU nextPDU(){
         l.lock();
         PDU p;
@@ -47,13 +55,14 @@ class TransfereCCDownload extends Thread{
         return null;
     }
 
+    /*
+        Este método vai ter de ser otimizado
+    */
     public void run(){
         try{
             String ola = "OLA";
             PDU p = new PDU(0, 0, 1024, false, false, false, true,ola.getBytes());
             agente.sendPDU(p,addressDest,7777);
-
-
 
             File file = new File(filename);
 
@@ -68,10 +77,11 @@ class TransfereCCDownload extends Thread{
             FileWriter writer = new FileWriter(file);
 
             int contador = 0;
-            while(contador < 57){
+            while(contador > -1){
                 PDU np = nextPDU();
                 String data = new String(np.getData());
                 writer.write(data);
+                contador++;
             }
             writer.close();
         } catch(Exception e){

@@ -33,12 +33,19 @@ public class TransfereCC extends Thread {
     }
 
     ////////////////////////// RECEIVE //////////////////////////
+    /*
+        Método que passa um array de byte para um objeto.
+    */
     public Object deserializePDU(byte[] data) throws IOException, ClassNotFoundException {
         ByteArrayInputStream in = new ByteArrayInputStream(data);
         ObjectInputStream is = new ObjectInputStream(in);
         return is.readObject();
     }
 
+    /*
+        Método que recebe Datagramas provenientes do AgenteUDP e entrega nas
+    threads responsáveis por um dado IP.
+    */
     public void recebePDU(DatagramPacket dp){
         byte[] data = dp.getData();
         InetAddress ipAddress = dp.getAddress();
