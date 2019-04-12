@@ -5,14 +5,15 @@ import java.util.concurrent.locks.*;
 
 class TransfereCCDownload extends Thread{
     AgenteUDP agente;
-    private InetAddress addressDest;
+    InetAddress addressDest;
+    String filename;
     LinkedList<PDU> received = new LinkedList<>();
-    final Lock l = new ReentrantLock();
-    final Condition empty  = l.newCondition();
+    Lock l = new ReentrantLock();
+    Condition empty  = l.newCondition();
 
-    public TransfereCCDownload(AgenteUDP agent, String destip) throws UnknownHostException{
+    public TransfereCCDownload(AgenteUDP agent, String destip, String file_name) throws UnknownHostException{
         agente = agent;
-        this.addressDest = InetAddress.getByName(destip);
+        addressDest = InetAddress.getByName(destip);
     }
 
     public void recebePDU(PDU p){
@@ -50,7 +51,10 @@ class TransfereCCDownload extends Thread{
         PDU p = new PDU(0, 0, 1024, false, false, false, true,ola.getBytes());
         agente.sendPDU(p,addressDest,7777);
 
-        while(true)
-            nextPDU();
+        int contador = 0;
+        while(contador < 57){
+            PDU np = nextPDU();
+            String data = new String(np.getData());
+        }
     }
 }

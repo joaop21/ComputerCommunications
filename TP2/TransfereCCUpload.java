@@ -8,7 +8,7 @@ class TransfereCCUpload extends Thread{
     AgenteUDP agente;
     InetAddress addressDest;
     File file;
-    byte[] file_byte;
+    FileInputStream fis;
     LinkedList<PDU> received = new LinkedList<>();
     final Lock l = new ReentrantLock();
     final Condition empty  = l.newCondition();
@@ -17,7 +17,7 @@ class TransfereCCUpload extends Thread{
         agente = agent;
         addressDest = destip;
         file = fich;
-        file_byte = Files.readAllBytes(file.toPath());
+        fis = new FileInputStream(fich);
     }
 
     public void recebePDU(PDU p){
@@ -50,11 +50,50 @@ class TransfereCCUpload extends Thread{
         return null;
     }
 
+    public void sendFile(){
+        // teste a 1024 bytes
+        /**int file_length = file_byte.length;
+        for(int i = 0 , seq = 0; i < file_length ; i+= 1024, seq++){
+            byte[] data = new byte[1024];
+            for(int j = 0 ; (j < 1024) || (i+j < file_length) ; j++)
+                data[j] = file_byte[i + j];
+
+            PDU p = new PDU(0, 0, 1024, false, false, false, true,file_byte);
+            agente.sendPDU(p,addressDest,7777);
+        }*/
+        try{
+            InputStreamReader isr = new InputStreamReader(fis);
+            long file_length = file.length();
+            char[] file_char = new char[(int)file_length];
+            isr.read(file_char, 0, (int)file_length);
+
+            char[] lidos = new char[1024];
+            lidos[0] = file_char[0];
+            int seq = 1;
+            for(int i = 1; i < file_length ; i++){
+                if(i%1024 != 0){
+                    lidos[i%1024] = file_char[i];
+                }else{
+                    String data = new String(lidos);
+                    PDU p = new PDU(seq, 0, 1024, false, false, false, true,data.getBytes());
+                    agente.sendPDU(p,addressDest,7777);
+                    seq++;
+                    lidos = new char[1024];
+                    lidos[0] = file_char[i];
+                }
+            }
+            System.out.println(seq);
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+
+
+    }
+
     public void run(){
 
-        while(true){
-            PDU p = nextPDU();
-        }
+        PDU p = nextPDU();
+        sendFile();
 
     }
 }

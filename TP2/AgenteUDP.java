@@ -12,7 +12,7 @@ class AgenteUDP implements Runnable{
         serverSocket = new DatagramSocket(7777);
     }
 
-    public void sendPDU(PDU segment,InetAddress IPAddress, int port){
+    public synchronized void sendPDU(PDU segment,InetAddress IPAddress, int port){
         try{
             sendData = segment.serialize();
             DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);

@@ -82,7 +82,7 @@ public class TransfereCC extends Thread {
             agent.start();
 
             if(this.download == true){
-                tfd = new TransfereCCDownload(agente,destinationIP);
+                tfd = new TransfereCCDownload(agente,destinationIP,filename);
                 new Thread(tfd).run();
             }
 
