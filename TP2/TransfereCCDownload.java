@@ -14,6 +14,7 @@ class TransfereCCDownload extends Thread{
     public TransfereCCDownload(AgenteUDP agent, String destip, String file_name) throws UnknownHostException{
         agente = agent;
         addressDest = InetAddress.getByName(destip);
+        filename = file_name;
     }
 
     public void recebePDU(PDU p){
@@ -47,14 +48,34 @@ class TransfereCCDownload extends Thread{
     }
 
     public void run(){
-        String ola = "OLA";
-        PDU p = new PDU(0, 0, 1024, false, false, false, true,ola.getBytes());
-        agente.sendPDU(p,addressDest,7777);
+        try{
+            String ola = "OLA";
+            PDU p = new PDU(0, 0, 1024, false, false, false, true,ola.getBytes());
+            agente.sendPDU(p,addressDest,7777);
 
-        int contador = 0;
-        while(contador < 57){
-            PDU np = nextPDU();
-            String data = new String(np.getData());
+
+
+            File file = new File(filename);
+
+            //Create the file
+            if (file.createNewFile()){
+                System.out.println("File is created!");
+            } else {
+                System.out.println("File already exists.");
+            }
+
+            //Write Content
+            FileWriter writer = new FileWriter(file);
+
+            int contador = 0;
+            while(contador < 57){
+                PDU np = nextPDU();
+                String data = new String(np.getData());
+                writer.write(data);
+            }
+            writer.close();
+        } catch(Exception e){
+            e.printStackTrace();
         }
     }
 }
