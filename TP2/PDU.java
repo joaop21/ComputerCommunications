@@ -8,9 +8,9 @@ public class PDU implements Serializable{
     private boolean fin;
     private boolean ack;
     private boolean psh;
-    private String data;
+    private byte[] data;
 
-    public PDU(int seq, int ack_n, int mss, Boolean syn, Boolean fin, Boolean ack,Boolean psh,String dt){
+    public PDU(int seq, int ack_n, int mss, Boolean syn, Boolean fin, Boolean ack,Boolean psh,byte[] dt){
         this.sequence_number = seq;
         this.ack_number = ack_n;
         this.mss = mss;
@@ -35,7 +35,7 @@ public class PDU implements Serializable{
 
     public Boolean getPSH(){ return this.psh; }
 
-    public String getData(){ return this.data; }
+    public byte[] getData(){ return this.data; }
 
     public byte[] serialize() throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();

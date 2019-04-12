@@ -5,10 +5,10 @@ import java.util.HashMap;
 
 public class TransfereCC extends Thread {
     AgenteUDP agente;
-    private final boolean upload;
-    private final boolean download;
-    private File fich;
-    private String filename;
+    final boolean upload;
+    final boolean download;
+    File fich;
+    String filename;
     String destinationIP;
     Map<InetAddress,TransfereCCUpload> threads_upload = new HashMap<>();
     TransfereCCDownload tfd;
@@ -53,7 +53,7 @@ public class TransfereCC extends Thread {
 
                     // cria um novo tranfereCC
                     TransfereCCUpload ntup;
-                    ntup = new TransfereCCUpload(agente,ipAddress);
+                    ntup = new TransfereCCUpload(agente,ipAddress,this.fich);
 
                     // inicia thread
                     new Thread(ntup).start();

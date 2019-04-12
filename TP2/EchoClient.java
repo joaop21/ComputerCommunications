@@ -40,7 +40,8 @@ public class EchoClient {
     }
 
     public String sendEcho(String msg) throws Exception{
-        PDU p = new PDU(0, 0, 1024, false, false, false, true,"OLA");
+        String ola = "OLA";
+        PDU p = new PDU(0, 0, 1024, false, false, false, true,ola.getBytes());
         buf = p.serialize();
         DatagramPacket packet = new DatagramPacket(buf, buf.length, addressDest, 7777);
         socket.send(packet);
