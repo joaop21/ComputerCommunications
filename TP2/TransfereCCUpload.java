@@ -97,7 +97,7 @@ class TransfereCCUpload extends Thread{
             }
             String data = new String(lidos);
             segmented_file.put(seq,data);
-            System.out.println(seq/mss);
+            System.out.println(segmented_file.size());
 
         } catch(Exception e){
             e.printStackTrace();

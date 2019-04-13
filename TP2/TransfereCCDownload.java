@@ -70,19 +70,21 @@ class TransfereCCDownload extends Thread{
             if (file.createNewFile()){
                 System.out.println("File is created!");
             } else {
-                System.out.println("File already exists.");
+                System.out.println("File already exists. Information will be truncated.");
             }
 
             //Write Content
             FileWriter writer = new FileWriter(file);
 
+            // devido a este ciclo, o ultimo segmento nao é escrito
+            // temos ainda de passar no inicio de conexão quantos segmentos vamos enviar
             int contador = 0;
-            //while(contador > -1){
+            while(contador > -1){
                 PDU np = nextPDU();
                 String data = new String(np.getData());
                 writer.write(data);
                 contador++;
-            //}
+            }
             writer.close();
         } catch(Exception e){
             e.printStackTrace();
