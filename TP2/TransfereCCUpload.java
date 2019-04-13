@@ -3,6 +3,8 @@ import java.io.*;
 import java.util.LinkedList;
 import java.util.concurrent.locks.*;
 import java.nio.file.Files;
+import java.util.Map;
+import java.util.HashMap;
 
 class TransfereCCUpload extends Thread{
     AgenteUDP agente;
@@ -12,12 +14,15 @@ class TransfereCCUpload extends Thread{
     LinkedList<PDU> received = new LinkedList<>();
     final Lock l = new ReentrantLock();
     final Condition empty  = l.newCondition();
+    int mss;
+    Map<Integer,String> segmented_file = new HashMap<>();
 
     public TransfereCCUpload(AgenteUDP agent, InetAddress destip, File fich) throws UnknownHostException, IOException{
         agente = agent;
         addressDest = destip;
         file = fich;
         fis = new FileInputStream(fich);
+        mss = 1024;
     }
 
     /*
@@ -59,40 +64,56 @@ class TransfereCCUpload extends Thread{
     }
 
     /*
-        Pega no ficheiro divide-o e envia-o para o destino
-
-        Precisa duma otimização para o caso de UDPs se perderem e
-    necessitarmos de reenviar
+        Divide o ficheiro consoante o MSS e coloca-o num MAP
     */
-    public void sendFile(){
-
+    public void divideFile(){
         try{
             InputStreamReader isr = new InputStreamReader(fis);
             long file_length = file.length();
             char[] file_char = new char[(int)file_length];
             isr.read(file_char, 0, (int)file_length);
 
-            char[] lidos = new char[1024];
+            char[] lidos;
+            if(file_length < mss)
+                lidos = new char[(int) file_length];
+            else lidos = new char[mss];
+
             lidos[0] = file_char[0];
-            int seq = 1;
+            int seq = 0;
             for(int i = 1; i < file_length ; i++){
-                if(i%1024 != 0){
-                    lidos[i%1024] = file_char[i];
+                if(i%mss != 0){
+                    lidos[i%mss] = file_char[i];
                 }else{
                     String data = new String(lidos);
-                    PDU p = new PDU(seq, 0, 1024, false, false, false, true,data.getBytes());
-                    agente.sendPDU(p,addressDest,7777);
-                    seq++;
-                    lidos = new char[1024];
+                    segmented_file.put(seq,data);
+                    seq+=mss;
+
+                    if(file_length-i < mss)
+                        lidos = new char[(int) file_length-i];
+                    else lidos = new char[mss];
+
                     lidos[0] = file_char[i];
                 }
             }
             String data = new String(lidos);
-            PDU p = new PDU(seq, 0, 1024, false, false, false, true, data.getBytes());
-            agente.sendPDU(p,addressDest,7777);
-            System.out.println(seq);
+            segmented_file.put(seq,data);
+            System.out.println(seq/mss);
+
         } catch(Exception e){
             e.printStackTrace();
+        }
+    }
+
+    /*
+        Envia ficheiro para o destino
+    */
+    public void sendFile(){
+
+        int num_segment = segmented_file.size();
+        for(int i = 0 , seq = 0 ; i < num_segment ; i++ , seq += mss){
+            String data = segmented_file.get(seq);
+            PDU p = new PDU(seq, 0, 1024, false, false, false, true, data.getBytes());
+            agente.sendPDU(p,addressDest,7777);
         }
 
     }
@@ -103,6 +124,7 @@ class TransfereCCUpload extends Thread{
     public void run(){
 
         PDU p = nextPDU();
+        divideFile();
         sendFile();
 
     }

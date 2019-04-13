@@ -77,12 +77,12 @@ class TransfereCCDownload extends Thread{
             FileWriter writer = new FileWriter(file);
 
             int contador = 0;
-            while(contador > -1){
+            //while(contador > -1){
                 PDU np = nextPDU();
                 String data = new String(np.getData());
                 writer.write(data);
                 contador++;
-            }
+            //}
             writer.close();
         } catch(Exception e){
             e.printStackTrace();

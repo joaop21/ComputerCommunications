@@ -4,8 +4,6 @@ import java.net.*;
 class AgenteUDP implements Runnable{
     TransfereCC transfCC;
     DatagramSocket serverSocket ;
-    byte[] receiveData = new byte[65527]; // tamanho maximo para dados
-    byte[] sendData = new byte[65527];
 
     public AgenteUDP(TransfereCC tfcc) throws Exception{
         transfCC = tfcc;
@@ -14,7 +12,7 @@ class AgenteUDP implements Runnable{
 
     public synchronized void sendPDU(PDU segment,InetAddress IPAddress, int port){
         try{
-            sendData = segment.serialize();
+            byte[] sendData = segment.serialize();
             DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
             serverSocket.send(sendPacket);
         } catch(Exception e){
@@ -28,7 +26,7 @@ class AgenteUDP implements Runnable{
     public void run(){
         try{
             while(true){
-
+                byte[] receiveData = new byte[65527]; // tamanho maximo para dados
                 DatagramPacket receivedPacket = new DatagramPacket(receiveData, receiveData.length);
                 serverSocket.receive(receivedPacket);
 

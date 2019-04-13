@@ -2,6 +2,7 @@ import java.net.*;
 import java.io.*;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.concurrent.locks.*;
 
 public class TransfereCC extends Thread {
     AgenteUDP agente;
@@ -11,9 +12,13 @@ public class TransfereCC extends Thread {
     String filename;
     String destinationIP;
     Map<InetAddress,TransfereCCUpload> threads_upload = new HashMap<>();
+    Lock l = new ReentrantLock();
     TransfereCCDownload tfd;
 
     ////////////////////////// CONSTRUTORES //////////////////////////
+    /*
+        Construtor usado para quando é pretendido fazer upload
+    */
     public TransfereCC(File f) throws SocketException,Exception{
         agente = new AgenteUDP(this);
         this.upload = true;
@@ -23,6 +28,9 @@ public class TransfereCC extends Thread {
         destinationIP = "";
     }
 
+    /*
+        Construtor usado quando é pretendido fazer download
+    */
     public TransfereCC(String file, String destip) throws SocketException,Exception{
         this.agente = new AgenteUDP(this);
         this.upload = false;
@@ -66,7 +74,10 @@ public class TransfereCC extends Thread {
                     new Thread(ntup).start();
 
                     // insere no hashmap
+                    l.lock();
                     threads_upload.put(ipAddress,ntup);
+                    l.unlock();
+
                     ntup.recebePDU(p);
                 } else{
                     tup.recebePDU(p);
@@ -79,6 +90,15 @@ public class TransfereCC extends Thread {
             e.printStackTrace();
         }
 
+    }
+
+    public void removeConnection(InetAddress ip){
+        l.lock();
+        try{
+            threads_upload.remove(ip);
+        } finally{
+            l.unlock();
+        }
     }
 
     ////////////////////////// RUN //////////////////////////
