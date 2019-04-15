@@ -55,11 +55,13 @@ public class TransfereCC extends Thread {
     threads responsáveis por um dado IP.
     */
     public void recebePDU(DatagramPacket dp){
+        // Returns the data buffer.
         byte[] data = dp.getData();
+        // Returns the raw IP address of this InetAddress object.
         InetAddress ipAddress = dp.getAddress();
 
         try{
-
+            // Deserialize the datagram's data: bytes -> PDU
             PDU p = (PDU) deserializePDU(data);
 
             if(this.upload == true){
@@ -104,7 +106,7 @@ public class TransfereCC extends Thread {
     ////////////////////////// RUN //////////////////////////
     public void run(){
         try{
-            // inicializa server que recebe packets
+            // inicializa server (AgenteUDP) que recebe packets
             Thread agent = new Thread(agente);
             agent.start();
 
@@ -113,6 +115,7 @@ public class TransfereCC extends Thread {
                 new Thread(tfd).run();
             }
 
+            // Interrupts this thread.
             agent.interrupt();
         } catch(UnknownHostException e){
             e.printStackTrace();

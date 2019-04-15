@@ -17,6 +17,7 @@ public class TransfereCCcmd{
 
     public static void get(String ficheiro, String address){
         try{
+            // Start a Download (file, destination IP).
             new Thread(new TransfereCC(ficheiro,address)).run();
 
         } catch(Exception e){
@@ -26,8 +27,10 @@ public class TransfereCCcmd{
 
     public static void put(String ficheiro){
         try{
+            // Creates a new File instance by converting the given pathname string into an abstract pathname.
             File f = new File(ficheiro);
             if(f.exists() && !f.isDirectory())
+                // Start an Upload (file).
                 new Thread(new TransfereCC(f)).run();
             else
                 System.out.println("File doesn't exist.");
