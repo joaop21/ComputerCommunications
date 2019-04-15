@@ -15,6 +15,7 @@ class TransfereCCDownload extends Thread{
     */
     // LinkedList to process the PDUs
     LinkedList<PDU> received = new LinkedList<>();
+    int segment_num;
     Lock l = new ReentrantLock();
     Condition empty  = l.newCondition();
 
@@ -65,14 +66,37 @@ class TransfereCCDownload extends Thread{
     }
 
     /*
+        Método que define o início de uma conexão
+        Como é o lado do cliente este é quem envia um SYN,
+        espera um SYNACK
+        e envia um ACK
+    */
+    void beginConnection(){
+        // envia SYN
+        PDU syn = new PDU(0, 1, 1024, new String(), true, false, false, false, new byte[0]);
+        agente.sendPDU(syn,addressDest,7777);
+
+        // recebe SYNACK
+        while(true){
+            PDU synack = nextPDU();
+            if(synack.getSYN() == true && synack.getACK() == true){
+                segment_num = Integer.valueOf(synack.getOptions());
+                break;
+            }
+        }
+
+        // envia ACK
+        PDU ack = new PDU(2, 1, 1024, new String(), false, false, false, true, new byte[0]);
+        agente.sendPDU(syn,addressDest,7777);
+    }
+
+    /*
         Este método vai ter de ser otimizado
     */
     public void run(){
         try{
-            String ola = "OLA";
-            PDU p = new PDU(0, 0, 1024, false, false, false, true,ola.getBytes());
-            // AgenteUDP sends PDU
-            agente.sendPDU(p,addressDest,7777);
+            // Starts the connection
+            beginConnection();
 
             // Creates a new File instance by converting the given pathname string into an abstract pathname.
             File file = new File(filename);
@@ -89,12 +113,12 @@ class TransfereCCDownload extends Thread{
 
             // devido a este ciclo, o ultimo segmento nao é escrito
             // temos ainda de passar no inicio de conexão quantos segmentos vamos enviar
-            int contador = 0;
-            while(contador > -1){
+            int segment = 0;
+            while(segment < segment_num){
                 PDU np = nextPDU();
                 String data = new String(np.getData());
                 writer.write(data);
-                contador++;
+                segment++;
             }
             // Closes the stream, flushing it first.
             writer.close();

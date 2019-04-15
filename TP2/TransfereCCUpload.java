@@ -125,7 +125,7 @@ class TransfereCCUpload extends Thread{
         int num_segment = segmented_file.size();
         for(int i = 0 , seq = 0 ; i < num_segment ; i++ , seq += mss){
             String data = segmented_file.get(seq);
-            PDU p = new PDU(seq, 0, 1024, false, false, false, true, data.getBytes());
+            PDU p = new PDU(seq, 0, 1024, "",false, false, false, true, data.getBytes());
             // AgenteUDP sends PDU
             agente.sendPDU(p,addressDest,7777);
         }
@@ -133,12 +133,40 @@ class TransfereCCUpload extends Thread{
     }
 
     /*
+        Método que define o início de uma conexão
+    */
+    void beginConnection(){
+        // Recebe SYN
+        while(true){
+            PDU syn = nextPDU();
+            if(syn.getSYN() == true){
+                mss = syn.getMSS();
+                break;
+            }
+        }
+
+        // divide ficheiro consoante o MSS
+        divideFile();
+
+        // envia SYNACK
+        PDU synack = new PDU(1, 0, 1024, String.valueOf(segmented_file.size()), true, false, true, false, new byte[0]);
+        agente.sendPDU(synack,addressDest,7777);
+
+        // recebe ACK
+        while(true){
+            PDU ack = nextPDU();
+            if(ack.getACK() == true)
+                break;
+        }
+    }
+
+    /*
         Este método vai ter de ser otimizado
     */
     public void run(){
 
-        PDU p = nextPDU();
-        divideFile();
+        beginConnection();
+
         sendFile();
 
     }
