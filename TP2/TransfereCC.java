@@ -64,8 +64,12 @@ public class TransfereCC extends Thread {
             // Deserialize the datagram's data: bytes -> PDU
             PDU p = (PDU) deserializePDU(data);
 
+            // It's a Upload ...
             if(this.upload == true){
+                // Get thread associated with an IP address.
                 TransfereCCUpload tup = threads_upload.get(ipAddress);
+
+                // If thread doesn't exist ...
                 if(tup == null){
 
                     // cria um novo tranfereCC
@@ -80,11 +84,15 @@ public class TransfereCC extends Thread {
                     threads_upload.put(ipAddress,ntup);
                     l.unlock();
 
+                    // TransfereCCUpload processes the PDU.
                     ntup.recebePDU(p);
                 } else{
+                    // TransfereCCUpload processes the PDU.
                     tup.recebePDU(p);
                 }
-            } else{
+            } // It's a Download ...
+            else{
+                // TransfereCCDownload processes the PDU.
                 tfd.recebePDU(p);
             }
 
@@ -110,6 +118,7 @@ public class TransfereCC extends Thread {
             Thread agent = new Thread(agente);
             agent.start();
 
+            // It's a Download ...
             if(this.download == true){
                 tfd = new TransfereCCDownload(agente,destinationIP,filename);
                 new Thread(tfd).run();

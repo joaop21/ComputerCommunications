@@ -11,16 +11,25 @@ class TransfereCCUpload extends Thread{
     InetAddress addressDest;
     File file;
     FileInputStream fis;
+    /*
+    LinkedList is a doubly-linked list implementation of the List and Deque interfaces.
+    LinkedList allows for constant-time insertions or removals using iterators, but only
+    sequential access of elements. In other words, LinkedList can be searched forward and backward
+    but the time it takes to traverse the list is directly proportional to the size of the list.
+    */
+    // LinkedList to process the PDUs
     LinkedList<PDU> received = new LinkedList<>();
     final Lock l = new ReentrantLock();
     final Condition empty  = l.newCondition();
     int mss;
+    // Segmented File because of MSS
     Map<Integer,String> segmented_file = new HashMap<>();
 
     public TransfereCCUpload(AgenteUDP agent, InetAddress destip, File fich) throws UnknownHostException, IOException{
         agente = agent;
         addressDest = destip;
         file = fich;
+        // Creates a FileInputStream by opening a connection to an actual file, the file named by the File object file in the file system.
         fis = new FileInputStream(fich);
         mss = 1024;
     }
@@ -33,6 +42,7 @@ class TransfereCCUpload extends Thread{
         l.lock();
         try{
             System.out.println("PDU from Host: " + this.addressDest);
+            // Appends the specified element to the end of this list.
             received.add(p);
             empty.signal();
         } finally{
@@ -68,9 +78,12 @@ class TransfereCCUpload extends Thread{
     */
     public void divideFile(){
         try{
+            // Creates an InputStreamReader that uses the default charset.
             InputStreamReader isr = new InputStreamReader(fis);
+            // Returns the length of the file denoted by this abstract pathname.
             long file_length = file.length();
             char[] file_char = new char[(int)file_length];
+            // Reads characters into a portion of an array.
             isr.read(file_char, 0, (int)file_length);
 
             char[] lidos;
@@ -113,6 +126,7 @@ class TransfereCCUpload extends Thread{
         for(int i = 0 , seq = 0 ; i < num_segment ; i++ , seq += mss){
             String data = segmented_file.get(seq);
             PDU p = new PDU(seq, 0, 1024, false, false, false, true, data.getBytes());
+            // AgenteUDP sends PDU
             agente.sendPDU(p,addressDest,7777);
         }
 
