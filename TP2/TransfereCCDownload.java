@@ -87,7 +87,7 @@ class TransfereCCDownload extends Thread{
 
         // envia ACK
         PDU ack = new PDU(2, 1, 1024, new String(), false, false, true, false, new byte[0]);
-        agente.sendPDU(syn,addressDest,7777);
+        agente.sendPDU(ack,addressDest,7777);
     }
 
     /*

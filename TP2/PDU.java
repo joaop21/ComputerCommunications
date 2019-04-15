@@ -11,7 +11,7 @@ public class PDU implements Serializable{
     private boolean psh;
     private byte[] data;
 
-    public PDU(int seq, int ack_n, int mss, String options, Boolean syn, Boolean fin, Boolean ack,Boolean psh,byte[] dt){
+    public PDU(int seq, int ack_n, int mss, String options, Boolean syn, Boolean fin, Boolean ack,Boolean psh, byte[] dt){
         this.sequence_number = seq;
         this.ack_number = ack_n;
         this.mss = mss;
