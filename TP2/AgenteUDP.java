@@ -24,6 +24,10 @@ class AgenteUDP implements Runnable{
         }
     }
 
+    void closeAgent(){
+        serverSocket.close();
+    }
+
     /**
     * Isto funciona como um server que recebe packets
     */
@@ -37,11 +41,12 @@ class AgenteUDP implements Runnable{
                 serverSocket.receive(receivedPacket);
                 // transfCC processes the datagram packet.
                 transfCC.recebePDU(receivedPacket);
-
             }
+        } catch(SocketException e){
+            System.out.println("Closing channel ...");
         } catch(Exception e){
             e.printStackTrace();
-        } finally{
+        }finally{
             serverSocket.close();
         }
     }

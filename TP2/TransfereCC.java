@@ -74,7 +74,7 @@ public class TransfereCC extends Thread {
 
                     // cria um novo tranfereCC
                     TransfereCCUpload ntup;
-                    ntup = new TransfereCCUpload(agente,ipAddress,this.fich);
+                    ntup = new TransfereCCUpload(agente,this,ipAddress,this.fich);
 
                     // inicia thread
                     new Thread(ntup).start();
@@ -125,7 +125,8 @@ public class TransfereCC extends Thread {
             }
 
             // Interrupts this thread.
-            agent.interrupt();
+            agente.closeAgent();
+
         } catch(UnknownHostException e){
             e.printStackTrace();
         }

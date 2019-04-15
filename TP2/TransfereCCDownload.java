@@ -120,8 +120,11 @@ class TransfereCCDownload extends Thread{
                 writer.write(data);
                 segment++;
             }
+
             // Closes the stream, flushing it first.
             writer.close();
+
+            System.out.println("File was correctly Downloaded ...");
         } catch(Exception e){
             e.printStackTrace();
         }

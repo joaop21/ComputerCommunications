@@ -8,6 +8,7 @@ import java.util.HashMap;
 
 class TransfereCCUpload extends Thread{
     AgenteUDP agente;
+    TransfereCC tfcc;
     InetAddress addressDest;
     File file;
     FileInputStream fis;
@@ -25,8 +26,9 @@ class TransfereCCUpload extends Thread{
     // Segmented File because of MSS
     Map<Integer,String> segmented_file = new HashMap<>();
 
-    public TransfereCCUpload(AgenteUDP agent, InetAddress destip, File fich) throws UnknownHostException, IOException{
+    public TransfereCCUpload(AgenteUDP agent, TransfereCC tf,InetAddress destip, File fich) throws UnknownHostException, IOException{
         agente = agent;
+        tfcc = tf;
         addressDest = destip;
         file = fich;
         // Creates a FileInputStream by opening a connection to an actual file, the file named by the File object file in the file system.
@@ -168,6 +170,8 @@ class TransfereCCUpload extends Thread{
         beginConnection();
 
         sendFile();
+
+        tfcc.removeConnection(addressDest);
 
     }
 }
