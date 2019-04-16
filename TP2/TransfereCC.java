@@ -122,10 +122,10 @@ public class TransfereCC extends Thread {
             if(this.download == true){
                 tfd = new TransfereCCDownload(agente,destinationIP,filename);
                 new Thread(tfd).run();
-            }
 
-            // Interrupts this thread.
-            agente.closeAgent();
+                // Interrupts this thread.
+                agente.closeAgent();
+            }
 
         } catch(UnknownHostException e){
             e.printStackTrace();
