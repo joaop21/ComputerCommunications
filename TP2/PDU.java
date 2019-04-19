@@ -57,4 +57,16 @@ public class PDU implements Serializable{
         return out.toByteArray();
     }
 
+
+    public String pdu(){
+
+        if(syn==true && ack==false) return "SYN";
+        if(syn==true && ack==true) return "SYNACK";
+        if(fin==true && ack==false) return "FIN";
+        if(fin==true && ack==true) return "FINACK";
+        if((syn==false && ack==true) || (fin==false && ack==true)) return "ACK";
+
+        return "OTHER";
+    }
+
 }

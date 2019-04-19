@@ -43,7 +43,7 @@ class TransfereCCUpload extends Thread{
     public void recebePDU(PDU p){
         l.lock();
         try{
-            System.out.println("PDU from Host: " + this.addressDest);
+            System.out.println("PDU from Host: " + this.addressDest + " FLAG: " + p.pdu());
             // Appends the specified element to the end of this list.
             received.add(p);
             empty.signal();
