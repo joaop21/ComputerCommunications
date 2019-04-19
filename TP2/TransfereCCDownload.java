@@ -91,6 +91,34 @@ class TransfereCCDownload extends Thread{
     }
 
     /*
+        Método que define o fim de uma conexão
+    */
+    void endConnection(){
+
+        int fin_seq_number;
+
+        // Recebe FIN
+        while(true){
+            PDU fin = nextPDU();
+            if(fin.getFIN() == true){
+                fin_seq_number = fin.getSequenceNumber();
+                break;
+            }
+        }
+
+        // envia FINACK
+        PDU finack = new PDU(fin_seq_number+1, 2, 1024, new String(), false, true, true, false, new byte[0]);
+        agente.sendPDU(finack,addressDest,7777);
+
+        // recebe ACK
+        while(true){
+            PDU ack = nextPDU();
+            if(ack.getACK() == true)
+                break;
+        }
+    }
+
+    /*
         Este método vai ter de ser otimizado
     */
     public void run(){
@@ -123,6 +151,8 @@ class TransfereCCDownload extends Thread{
 
             // Closes the stream, flushing it first.
             writer.close();
+
+            endConnection();
 
             System.out.println("File was correctly Downloaded ...");
         } catch(Exception e){

@@ -125,12 +125,16 @@ class TransfereCCUpload extends Thread{
     public void sendFile(){
 
         int num_segment = segmented_file.size();
-        for(int i = 0 , seq = 0 ; i < num_segment ; i++ , seq += mss){
+        int seq = 0;
+
+        for(int i = 0 ; i < num_segment ; i++ , seq += mss){
             String data = segmented_file.get(seq);
             PDU p = new PDU(seq, 0, 1024, "",false, false, false, true, data.getBytes());
             // AgenteUDP sends PDU
             agente.sendPDU(p,addressDest,7777);
         }
+
+        endConnection(seq);
 
     }
 
@@ -160,6 +164,27 @@ class TransfereCCUpload extends Thread{
             if(ack.getACK() == true)
                 break;
         }
+    }
+
+    /*
+        Método que define o fim de uma conexão
+    */
+    void endConnection(int fin_seq_number){
+        // envia FIN
+        PDU fin = new PDU(fin_seq_number, 3, 1024, new String(), false, true, false, false, new byte[0]);
+        agente.sendPDU(fin,addressDest,7777);
+
+        // recebe FINACK
+        while(true){
+          PDU finack = nextPDU();
+          if(finack.getFIN() == true && finack.getACK() == true){
+              break;
+            }
+          }
+
+          // envia ACK
+          PDU ack = new PDU(fin_seq_number+2, 3, 1024, new String(), false, false, true, false, new byte[0]);
+          agente.sendPDU(ack,addressDest,7777);
     }
 
     /*
