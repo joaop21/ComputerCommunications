@@ -65,8 +65,7 @@ public class PDU implements Serializable{
         if(fin==true && ack==false) return "FIN";
         if(fin==true && ack==true) return "FINACK";
         if((syn==false && ack==true) || (fin==false && ack==true)) return "ACK";
-
-        return "OTHER";
+        return "DATA";
     }
 
 }

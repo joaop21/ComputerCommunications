@@ -33,7 +33,7 @@ class TransfereCCDownload extends Thread{
     public void recebePDU(PDU p){
         l.lock();
         try{
-            System.out.println("PDU from Host: " + this.addressDest + " FLAG: " + p.pdu() );
+            System.out.println("PDU from Host: " + this.addressDest + " FLAG: " + p.pdu() + " Seq Number: " + p.getSequenceNumber());
             // Appends the specified element to the end of this list.
             received.add(p);
             empty.signal();
