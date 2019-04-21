@@ -13,6 +13,10 @@ class AgenteUDP implements Runnable{
 
     public synchronized void sendPDU(PDU segment,InetAddress IPAddress, int port){
         try{
+            // calculate the data checksum
+            long checksum = segment.calculateChecksum();
+            // put the checksum value on thr checkum field of the PDU
+            segment.setChecksum(checksum);
             // Serialize the PDU: PDU -> bytes
             byte[] sendData = segment.serialize();
             // Constructs a datagram packet for sending packets of length 'length' to the specified port number on the specified host.

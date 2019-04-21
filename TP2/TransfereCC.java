@@ -64,6 +64,10 @@ public class TransfereCC extends Thread {
             // Deserialize the datagram's data: bytes -> PDU
             PDU p = (PDU) deserializePDU(data);
 
+            // check the value of the checksum
+            long checksum = p.calculateChecksum();
+            if(checksum != p.getChecksum()) return; // discards the PDU
+
             // It's a Upload ...
             if(this.upload == true){
                 // Get thread associated with an IP address.

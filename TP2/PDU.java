@@ -9,6 +9,7 @@ public class PDU implements Serializable{
     private boolean fin;
     private boolean ack;
     private boolean psh;
+    private long checksum;
     private byte[] data;
 
     public PDU(int seq, int ack_n, int mss, String options, Boolean syn, Boolean fin, Boolean ack,Boolean psh, byte[] dt){
@@ -20,6 +21,7 @@ public class PDU implements Serializable{
         this.fin = fin;
         this.ack = ack;
         this.psh = psh;
+        this.checksum = 0;
         this.data = dt;
     }
 
@@ -39,7 +41,11 @@ public class PDU implements Serializable{
 
     public Boolean getPSH(){ return this.psh; }
 
+    public long getChecksum(){ return this.checksum; }
+
     public byte[] getData(){ return this.data; }
+
+    public void setChecksum(long check){ this.checksum = check; }
 
     /*
     Java provides a mechanism, called object serialization where an object can be represented as
@@ -57,6 +63,44 @@ public class PDU implements Serializable{
         return out.toByteArray();
     }
 
+    public long calculateChecksum() {
+        byte[] buf = this.data;
+        int length = buf.length;
+        int i = 0;
+        long sum = 0;
+        long data;
+
+        // Handle all pairs
+        while (length > 1) {
+            data = (((buf[i] << 8) & 0xFF00) | ((buf[i + 1]) & 0xFF));
+            sum += data;
+
+            // 1's complement carry bit correction in 16-bits (detecting sign extension)
+            if ((sum & 0xFFFF0000) > 0) {
+                sum = sum & 0xFFFF;
+                sum += 1;
+            }
+            i += 2;
+            length -= 2;
+        }
+
+        // Handle remaining byte in odd length buffers
+        if (length > 0) {
+          // Corrected to include @Andy's edits and various comments on Stack Overflow
+          sum += (buf[i] << 8 & 0xFF00);
+          // 1's complement carry bit correction in 16-bits (detecting sign extension)
+          if ((sum & 0xFFFF0000) > 0) {
+            sum = sum & 0xFFFF;
+            sum += 1;
+          }
+        }
+
+        // Final 1's complement value correction to 16-bits
+        sum = ~sum;
+        sum = sum & 0xFFFF;
+        return sum;
+
+    }
 
     public String pdu(){
 
