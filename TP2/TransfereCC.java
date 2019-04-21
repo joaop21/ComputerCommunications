@@ -66,10 +66,7 @@ public class TransfereCC extends Thread {
 
             // check the value of the checksum
             long checksum = p.calculateChecksum();
-            if(checksum != p.getChecksum()){ // discards the PDU
-                System.out.println("\nA segment was discarded...\n");
-                return;
-            }
+            if(checksum != p.getChecksum()) return; // discards the PDU
 
             // It's a Upload ...
             if(this.upload == true){
