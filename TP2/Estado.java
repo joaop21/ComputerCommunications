@@ -13,10 +13,18 @@ enum State {
 }
 
 public class Estado{
-    State estado_atual;
+    private State estado_atual;
+    private int actual_sequence_number;
+    private int actual_ack_number;
+    private int actual_mss;
+    private int timeout;
 
     public Estado(){
         estado_atual = State.LISTEN;
+        actual_sequence_number = 0;
+        actual_ack_number = 0;
+        actual_mss = 0;
+        timeout = 0;
     }
 
     State getNextState(){
