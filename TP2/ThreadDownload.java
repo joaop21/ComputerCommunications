@@ -3,7 +3,7 @@ import java.io.*;
 import java.util.LinkedList;
 import java.util.concurrent.locks.*;
 
-class TransfereCCDownload extends Thread{
+class ThreadDownload extends Thread{
     AgenteUDP agente;
     InetAddress addressDest;
     String filename;
@@ -19,7 +19,7 @@ class TransfereCCDownload extends Thread{
     Lock l = new ReentrantLock();
     Condition empty  = l.newCondition();
 
-    public TransfereCCDownload(AgenteUDP agent, String destip, String file_name) throws UnknownHostException{
+    public ThreadDownload(AgenteUDP agent, String destip, String file_name) throws UnknownHostException{
         agente = agent;
         // Determines the IP address of a host, given the host's name.
         addressDest = InetAddress.getByName(destip);

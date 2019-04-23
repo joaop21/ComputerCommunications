@@ -11,9 +11,9 @@ public class TransfereCC extends Thread {
     File fich;
     String filename;
     String destinationIP;
-    Map<InetAddress,TransfereCCUpload> threads_upload = new HashMap<>();
+    Map<InetAddress,ThreadUpload> threads_upload = new HashMap<>();
     Lock l = new ReentrantLock();
-    TransfereCCDownload tfd;
+    ThreadDownload tfd;
 
     ////////////////////////// CONSTRUTORES //////////////////////////
     /*
@@ -71,14 +71,14 @@ public class TransfereCC extends Thread {
             // It's a Upload ...
             if(this.upload == true){
                 // Get thread associated with an IP address.
-                TransfereCCUpload tup = threads_upload.get(ipAddress);
+                ThreadUpload tup = threads_upload.get(ipAddress);
 
                 // If thread doesn't exist ...
                 if(tup == null){
 
                     // cria um novo tranfereCC
-                    TransfereCCUpload ntup;
-                    ntup = new TransfereCCUpload(agente,this,ipAddress,this.fich);
+                    ThreadUpload ntup;
+                    ntup = new ThreadUpload(agente,this,ipAddress,this.fich);
 
                     // inicia thread
                     new Thread(ntup).start();
@@ -88,15 +88,15 @@ public class TransfereCC extends Thread {
                     threads_upload.put(ipAddress,ntup);
                     l.unlock();
 
-                    // TransfereCCUpload processes the PDU.
+                    // ThreadUpload processes the PDU.
                     ntup.recebePDU(p);
                 } else{
-                    // TransfereCCUpload processes the PDU.
+                    // ThreadUpload processes the PDU.
                     tup.recebePDU(p);
                 }
             } // It's a Download ...
             else{
-                // TransfereCCDownload processes the PDU.
+                // ThreadDownload processes the PDU.
                 tfd.recebePDU(p);
             }
 
@@ -124,7 +124,7 @@ public class TransfereCC extends Thread {
 
             // It's a Download ...
             if(this.download == true){
-                tfd = new TransfereCCDownload(agente,destinationIP,filename);
+                tfd = new ThreadDownload(agente,destinationIP,filename);
                 new Thread(tfd).run();
 
                 // Interrupts this thread.

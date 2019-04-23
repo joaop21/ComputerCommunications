@@ -6,7 +6,7 @@ import java.nio.file.Files;
 import java.util.Map;
 import java.util.HashMap;
 
-class TransfereCCUpload extends Thread{
+class ThreadUpload extends Thread{
     AgenteUDP agente;
     TransfereCC tfcc;
     InetAddress addressDest;
@@ -26,7 +26,7 @@ class TransfereCCUpload extends Thread{
     // Segmented File because of MSS
     Map<Integer,String> segmented_file = new HashMap<>();
 
-    public TransfereCCUpload(AgenteUDP agent, TransfereCC tf,InetAddress destip, File fich) throws UnknownHostException, IOException{
+    public ThreadUpload(AgenteUDP agent, TransfereCC tf,InetAddress destip, File fich) throws UnknownHostException, IOException{
         agente = agent;
         tfcc = tf;
         addressDest = destip;
