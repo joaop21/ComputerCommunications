@@ -6,14 +6,16 @@ import java.util.concurrent.locks.*;
 
 public class TransfereCC extends Thread {
     AgenteUDP agente;
+    private static final int MSS = 1024;
     final boolean upload;
     final boolean download;
     File fich;
     String filename;
     String destinationIP;
     Map<InetAddress,ThreadUpload> threads_upload = new HashMap<>();
-    Lock l = new ReentrantLock();
     ThreadDownload tfd;
+    Lock l = new ReentrantLock();
+    Map<Integer,String> segmented_file = new HashMap<>();
 
     ////////////////////////// CONSTRUTORES //////////////////////////
     /*
@@ -21,10 +23,11 @@ public class TransfereCC extends Thread {
     */
     public TransfereCC(File f) throws SocketException,Exception{
         agente = new AgenteUDP(this);
-        this.upload = true;
-        this.download = false;
-        this.fich = f;
-        this.filename = f.getName();
+        upload = true;
+        download = false;
+        fich = f;
+        filename = f.getName();
+        segmented_file = divideFile(fich);
         destinationIP = "";
     }
 
@@ -78,7 +81,7 @@ public class TransfereCC extends Thread {
 
                     // cria um novo tranfereCC
                     ThreadUpload ntup;
-                    ntup = new ThreadUpload(agente,this,ipAddress,this.fich);
+                    ntup = new ThreadUpload(agente,this,ipAddress);
 
                     // inicia thread
                     new Thread(ntup).start();
@@ -134,6 +137,63 @@ public class TransfereCC extends Thread {
         } catch(UnknownHostException e){
             e.printStackTrace();
         }
+    }
 
+    ////////////////////////// Concurrent Acess //////////////////////////
+    public synchronized String getPartOfFile(int file_part){
+        return segmented_file.get(file_part);
+    }
+
+    public synchronized int segmentNumber(){
+        return segmented_file.size();
+    }
+
+    ////////////////////////// Auxiliar //////////////////////////
+    /*
+        Divide o ficheiro consoante o MSS e coloca-o num MAP<>
+    */
+    public Map<Integer,String> divideFile(File file){
+        try{
+            // Creates a FileInputStream by opening a connection to an actual file, the file named by the File object file in the file system.
+            FileInputStream fis = new FileInputStream(file);
+            // Creates an InputStreamReader that uses the default charset.
+            InputStreamReader isr = new InputStreamReader(fis);
+            // Returns the length of the file denoted by this abstract pathname.
+            long file_length = file.length();
+            char[] file_char = new char[(int)file_length];
+            // Reads characters into a portion of an array.
+            isr.read(file_char, 0, (int)file_length);
+
+            char[] lidos;
+            if(file_length < this.MSS)
+                lidos = new char[(int) file_length];
+            else lidos = new char[this.MSS];
+
+            lidos[0] = file_char[0];
+            int seq = 0;
+            Map<Integer,String> file_map = new HashMap<>();
+            for(int i = 1; i < file_length ; i++){
+                if(i%this.MSS != 0){
+                    lidos[i%this.MSS] = file_char[i];
+                }else{
+                    String data = new String(lidos);
+                    file_map.put(seq,data);
+                    seq+=this.MSS;
+
+                    if(file_length-i < this.MSS)
+                        lidos = new char[(int) file_length-i];
+                    else lidos = new char[this.MSS];
+
+                    lidos[0] = file_char[i];
+                }
+            }
+            String data = new String(lidos);
+            file_map.put(seq,data);
+
+            return file_map;
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+        return null;
     }
 }

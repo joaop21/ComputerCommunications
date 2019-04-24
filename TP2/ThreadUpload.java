@@ -10,8 +10,6 @@ class ThreadUpload extends Thread{
     AgenteUDP agente;
     TransfereCC tfcc;
     InetAddress addressDest;
-    File file;
-    FileInputStream fis;
     /*
     LinkedList is a doubly-linked list implementation of the List and Deque interfaces.
     LinkedList allows for constant-time insertions or removals using iterators, but only
@@ -22,18 +20,11 @@ class ThreadUpload extends Thread{
     LinkedList<PDU> received = new LinkedList<>();
     final Lock l = new ReentrantLock();
     final Condition empty  = l.newCondition();
-    int mss;
-    // Segmented File because of MSS
-    Map<Integer,String> segmented_file = new HashMap<>();
 
-    public ThreadUpload(AgenteUDP agent, TransfereCC tf,InetAddress destip, File fich) throws UnknownHostException, IOException{
+    public ThreadUpload(AgenteUDP agent, TransfereCC tf,InetAddress destip) throws UnknownHostException, IOException{
         agente = agent;
         tfcc = tf;
         addressDest = destip;
-        file = fich;
-        // Creates a FileInputStream by opening a connection to an actual file, the file named by the File object file in the file system.
-        fis = new FileInputStream(fich);
-        mss = 1024;
     }
 
     /*
@@ -76,60 +67,16 @@ class ThreadUpload extends Thread{
     }
 
     /*
-        Divide o ficheiro consoante o MSS e coloca-o num MAP
-    */
-    public void divideFile(){
-        try{
-            // Creates an InputStreamReader that uses the default charset.
-            InputStreamReader isr = new InputStreamReader(fis);
-            // Returns the length of the file denoted by this abstract pathname.
-            long file_length = file.length();
-            char[] file_char = new char[(int)file_length];
-            // Reads characters into a portion of an array.
-            isr.read(file_char, 0, (int)file_length);
-
-            char[] lidos;
-            if(file_length < mss)
-                lidos = new char[(int) file_length];
-            else lidos = new char[mss];
-
-            lidos[0] = file_char[0];
-            int seq = 0;
-            for(int i = 1; i < file_length ; i++){
-                if(i%mss != 0){
-                    lidos[i%mss] = file_char[i];
-                }else{
-                    String data = new String(lidos);
-                    segmented_file.put(seq,data);
-                    seq+=mss;
-
-                    if(file_length-i < mss)
-                        lidos = new char[(int) file_length-i];
-                    else lidos = new char[mss];
-
-                    lidos[0] = file_char[i];
-                }
-            }
-            String data = new String(lidos);
-            segmented_file.put(seq,data);
-            System.out.println(segmented_file.size());
-
-        } catch(Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    /*
         Envia ficheiro para o destino
     */
     public void sendFile(){
 
-        int num_segment = segmented_file.size();
+        int num_segment = tfcc.segmentNumber();
         int seq = 0;
 
-        for(int i = 0 ; i < num_segment ; i++ , seq += mss){
-            String data = segmented_file.get(seq);
-            PDU p = new PDU(seq, 0, 1024, "",false, false, false, true, data.getBytes());
+        for(int i = 0 ; i < num_segment ; i++ , seq += 1024){
+            String data = tfcc.getPartOfFile(seq);
+            PDU p = new PDU(seq, 0, "",false, false, false, true, data.getBytes());
             // AgenteUDP sends PDU
             agente.sendPDU(p,addressDest,7777);
         }
@@ -145,17 +92,12 @@ class ThreadUpload extends Thread{
         // Recebe SYN
         while(true){
             PDU syn = nextPDU();
-            if(syn.getSYN() == true){
-                mss = syn.getMSS();
+            if(syn.getSYN() == true)
                 break;
-            }
         }
 
-        // divide ficheiro consoante o MSS
-        divideFile();
-
         // envia SYNACK
-        PDU synack = new PDU(1, 0, 1024, String.valueOf(segmented_file.size()), true, false, true, false, new byte[0]);
+        PDU synack = new PDU(1, 0, String.valueOf(tfcc.segmentNumber()), true, false, true, false, new byte[0]);
         agente.sendPDU(synack,addressDest,7777);
 
         // recebe ACK
@@ -171,7 +113,7 @@ class ThreadUpload extends Thread{
     */
     void endConnection(int fin_seq_number){
         // envia FIN
-        PDU fin = new PDU(fin_seq_number, 3, 1024, new String(), false, true, false, false, new byte[0]);
+        PDU fin = new PDU(fin_seq_number, 3, new String(), false, true, false, false, new byte[0]);
         agente.sendPDU(fin,addressDest,7777);
 
         // recebe FINACK
@@ -183,7 +125,7 @@ class ThreadUpload extends Thread{
           }
 
           // envia ACK
-          PDU ack = new PDU(fin_seq_number+2, 3, 1024, new String(), false, false, true, false, new byte[0]);
+          PDU ack = new PDU(fin_seq_number+2, 3, new String(), false, false, true, false, new byte[0]);
           agente.sendPDU(ack,addressDest,7777);
     }
 

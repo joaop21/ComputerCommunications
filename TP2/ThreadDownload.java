@@ -73,7 +73,7 @@ class ThreadDownload extends Thread{
     */
     void beginConnection(){
         // envia SYN
-        PDU syn = new PDU(0, 1, 1024, new String(), true, false, false, false, new byte[0]);
+        PDU syn = new PDU(0, 1, new String(), true, false, false, false, new byte[0]);
         agente.sendPDU(syn,addressDest,7777);
 
         // recebe SYNACK
@@ -86,7 +86,7 @@ class ThreadDownload extends Thread{
         }
 
         // envia ACK
-        PDU ack = new PDU(2, 1, 1024, new String(), false, false, true, false, new byte[0]);
+        PDU ack = new PDU(2, 1, new String(), false, false, true, false, new byte[0]);
         agente.sendPDU(ack,addressDest,7777);
     }
 
@@ -107,7 +107,7 @@ class ThreadDownload extends Thread{
         }
 
         // envia FINACK
-        PDU finack = new PDU(fin_seq_number+1, 2, 1024, new String(), false, true, true, false, new byte[0]);
+        PDU finack = new PDU(fin_seq_number+1, 2, new String(), false, true, true, false, new byte[0]);
         agente.sendPDU(finack,addressDest,7777);
 
         // recebe ACK
