@@ -161,9 +161,12 @@ class ThreadDownload extends Thread{
                 PDU np = nextPDU();
                 String data = new String(np.getData());
                 int seq_number = np.getSequenceNumber()/1024;
+                System.out.println(seq_number);
+
+                file_parts[seq_number] = data;
 
                 if(seq_number > segment){
-                    PDU ack = new PDU(0, segment*1024, new String(), false, false, true, false, new byte[0]);
+                    PDU ack = new PDU(segment*1024, segment*1024, new String(), false, false, true, false, new byte[0]);
                     agente.sendPDU(ack,addressDest,7777);
                 } else{
                     while(segment < segment_num){
@@ -171,7 +174,6 @@ class ThreadDownload extends Thread{
                         else segment++;
                     }
                 }
-                file_parts[seq_number] = data;
             }
 
             createFile(file_parts);
