@@ -155,7 +155,6 @@ class ThreadDownload extends Thread{
             beginConnection();
 
             int segment = 0;
-            int expected_segment = 0;
             String file_parts[] = new String[segment_num];
 
             while(segment < segment_num){
@@ -163,12 +162,14 @@ class ThreadDownload extends Thread{
                 String data = new String(np.getData());
                 int seq_number = np.getSequenceNumber()/1024;
 
-                if(seq_number > expected_segment){
-                    PDU ack = new PDU(0, expected_segment*1024, new String(), false, false, true, false, new byte[0]);
+                if(seq_number > segment){
+                    PDU ack = new PDU(0, segment*1024, new String(), false, false, true, false, new byte[0]);
                     agente.sendPDU(ack,addressDest,7777);
                 } else{
-                    expected_segment++;
-                    segment++;
+                    while(segment < segment_num){
+                        if(file_parts[segment] == null) break;
+                        else segment++;
+                    }
                 }
                 file_parts[seq_number] = data;
             }
