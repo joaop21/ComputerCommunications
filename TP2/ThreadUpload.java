@@ -69,7 +69,7 @@ class ThreadUpload extends Thread{
     /*
         Envia ficheiro para o destino
     */
-    public void sendFile(){
+    public void dataTransfer(){
 
         int num_segment = tfcc.segmentNumber();
         int seq = 0;
@@ -77,8 +77,16 @@ class ThreadUpload extends Thread{
         for(int i = 0 ; i < num_segment ; i++ , seq += 1024){
             String data = tfcc.getPartOfFile(seq);
             PDU p = new PDU(seq, 0, "",false, false, false, true, data.getBytes());
-            // AgenteUDP sends PDU
             agente.sendPDU(p,addressDest,7777);
+
+            while(received.size() > 0){
+                PDU r = nextPDU();
+                if(r.getACK()){
+                    String part = tfcc.getPartOfFile(r.getAckNumber());
+                    PDU np = new PDU(r.getAckNumber(), 0, "",false, false, false, true, data.getBytes());
+                    agente.sendPDU(np,addressDest,7777);
+                }
+            }
         }
 
         endConnection(seq);
@@ -136,7 +144,7 @@ class ThreadUpload extends Thread{
 
         beginConnection();
 
-        sendFile();
+        dataTransfer();
 
         tfcc.removeConnection(addressDest);
 

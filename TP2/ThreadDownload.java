@@ -119,13 +119,10 @@ class ThreadDownload extends Thread{
     }
 
     /*
-        Este método vai ter de ser otimizado
+        Método que cria ficheiro
     */
-    public void run(){
+    public void createFile(String[] parts){
         try{
-            // Starts the connection
-            beginConnection();
-
             // Creates a new File instance by converting the given pathname string into an abstract pathname.
             File file = new File(filename);
 
@@ -139,18 +136,44 @@ class ThreadDownload extends Thread{
             // Write Content: Constructs a FileWriter object given a File object.
             FileWriter writer = new FileWriter(file);
 
-            // devido a este ciclo, o ultimo segmento nao é escrito
-            // temos ainda de passar no inicio de conexão quantos segmentos vamos enviar
-            int segment = 0;
-            while(segment < segment_num){
-                PDU np = nextPDU();
-                String data = new String(np.getData());
-                writer.write(data);
-                segment++;
-            }
+            int tam = parts.length;
+            for(int i = 0 ; i < tam ; i++)
+                writer.write(parts[i]);
 
             // Closes the stream, flushing it first.
             writer.close();
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    /*
+        Este método vai ter de ser otimizado
+    */
+    public void run(){
+        try{
+            beginConnection();
+
+            int segment = 0;
+            int expected_segment = 0;
+            String file_parts[] = new String[segment_num];
+
+            while(segment < segment_num){
+                PDU np = nextPDU();
+                String data = new String(np.getData());
+                int seq_number = np.getSequenceNumber()/1024;
+
+                if(seq_number > expected_segment){
+                    PDU ack = new PDU(0, expected_segment*1024, new String(), false, false, true, false, new byte[0]);
+                    agente.sendPDU(ack,addressDest,7777);
+                } else{
+                    expected_segment++;
+                    segment++;
+                }
+                file_parts[seq_number] = data;
+            }
+
+            createFile(file_parts);
 
             endConnection();
 
