@@ -161,7 +161,6 @@ class ThreadDownload extends Thread{
                 PDU np = nextPDU();
                 String data = new String(np.getData());
                 int seq_number = np.getSequenceNumber()/1024;
-                System.out.println(seq_number);
 
                 file_parts[seq_number] = data;
 

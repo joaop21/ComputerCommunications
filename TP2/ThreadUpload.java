@@ -78,6 +78,11 @@ class ThreadUpload extends Thread{
             String data = tfcc.getPartOfFile(seq);
             PDU p = new PDU(seq, 0, "",false, false, false, true, data.getBytes());
             agente.sendPDU(p,addressDest,7777);
+            try{
+                sleep(1);
+            } catch(Exception e){
+                e.printStackTrace();
+            }
 
             while(received.size() > 0){
                 PDU r = nextPDU();
