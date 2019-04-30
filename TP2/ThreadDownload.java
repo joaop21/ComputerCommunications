@@ -2,8 +2,6 @@ import java.net.*;
 import java.io.*;
 import java.util.LinkedList;
 import java.util.concurrent.locks.*;
-import java.util.ArrayList;
-import java.util.List;
 
 class ThreadDownload extends Thread{
     AgenteUDP agente;
@@ -123,7 +121,7 @@ class ThreadDownload extends Thread{
     /*
         Método que cria ficheiro
     */
-    public void createFile(List<String> parts){
+    public void createFile(String[] parts){
         try{
             // Creates a new File instance by converting the given pathname string into an abstract pathname.
             File file = new File(filename);
@@ -138,9 +136,9 @@ class ThreadDownload extends Thread{
             // Write Content: Constructs a FileWriter object given a File object.
             FileWriter writer = new FileWriter(file);
 
-            int tam = parts.size();
+            int tam = parts.length;
             for(int i = 0 ; i < tam ; i++)
-                writer.write(parts.get(i));
+                writer.write(parts[i]);
 
             // Closes the stream, flushing it first.
             writer.close();
@@ -157,21 +155,21 @@ class ThreadDownload extends Thread{
             beginConnection();
 
             int segment = 0;
-            List<String> file_parts = new ArrayList<>();
+            String file_parts[] = new String[segment_num];
 
             while(segment < segment_num){
                 PDU np = nextPDU();
                 String data = new String(np.getData());
                 int seq_number = np.getSequenceNumber()/1024;
 
-                file_parts.add(seq_number,data);
+                file_parts[seq_number] = data;
 
                 if(seq_number > segment){
                     PDU ack = new PDU(segment*1024, segment*1024, new String(), false, false, true, false, new byte[0]);
                     agente.sendPDU(ack,addressDest,7777);
                 } else{
                     while(segment < segment_num){
-                        if(file_parts.get(segment) == null) break;
+                        if(file_parts[segment] == null) break;
                         else segment++;
                     }
                 }
