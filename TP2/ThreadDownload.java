@@ -180,9 +180,9 @@ class ThreadDownload extends Thread{
                 }
             }
 
-            createFile(file_parts);
-
             endConnection();
+
+            createFile(file_parts);
 
             System.out.println("File was correctly Downloaded ...");
         } catch(Exception e){
