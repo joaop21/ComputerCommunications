@@ -5,15 +5,9 @@ import java.util.concurrent.locks.*;
 
 class ThreadDownload extends Thread{
     AgenteUDP agente;
+    Estado estado;
     InetAddress addressDest;
     String filename;
-    /*
-    LinkedList is a doubly-linked list implementation of the List and Deque interfaces.
-    LinkedList allows for constant-time insertions or removals using iterators, but only
-    sequential access of elements. In other words, LinkedList can be searched forward and backward
-    but the time it takes to traverse the list is directly proportional to the size of the list.
-    */
-    // LinkedList to process the PDUs
     LinkedList<PDU> received = new LinkedList<>();
     int segment_num;
     Lock l = new ReentrantLock();
@@ -21,6 +15,7 @@ class ThreadDownload extends Thread{
 
     public ThreadDownload(AgenteUDP agent, String destip, String file_name) throws UnknownHostException{
         agente = agent;
+        estado = new Estado();
         // Determines the IP address of a host, given the host's name.
         addressDest = InetAddress.getByName(destip);
         filename = file_name;
@@ -73,21 +68,27 @@ class ThreadDownload extends Thread{
     */
     void beginConnection(){
         // envia SYN
-        PDU syn = new PDU(0, 1, new String(), true, false, false, false, new byte[0]);
+        estado.setInitialRandomSequenceNumber();
+        estado.setReceiveWindow(55);
+        PDU syn = new PDU(estado.getSequenceNumber(), 0, new String(), true, false, false, false, new byte[0]);
         agente.sendPDU(syn,addressDest,7777);
+        estado.incrementSequenceNumber(1);
 
         // recebe SYNACK
         while(true){
             PDU synack = nextPDU();
             if(synack.getSYN() == true && synack.getACK() == true){
                 segment_num = Integer.valueOf(synack.getOptions());
+                estado.setAckNumber(syn.getSequenceNumber()+1);
                 break;
             }
         }
 
         // envia ACK
-        PDU ack = new PDU(2, 1, new String(), false, false, true, false, new byte[0]);
+        PDU ack = new PDU(estado.getSequenceNumber(), estado.getAckNumber(), new String(), false, false, true, false, new byte[0]);
         agente.sendPDU(ack,addressDest,7777);
+
+        estado.setFirstDataAckNumber(estado.getAckNumber());
     }
 
     /*
@@ -136,8 +137,8 @@ class ThreadDownload extends Thread{
             // Write Content: Constructs a FileWriter object given a File object.
             FileWriter writer = new FileWriter(file);
 
-            int tam = parts.length;
-            for(int i = 0 ; i < tam ; i++)
+            //int tam = parts.length;
+            for(int i = 0 ; i < segment_num ; i++)
                 writer.write(parts[i]);
 
             // Closes the stream, flushing it first.
@@ -155,22 +156,26 @@ class ThreadDownload extends Thread{
             beginConnection();
 
             int segment = 0;
-            String file_parts[] = new String[segment_num];
+            String file_parts[] = new String[segment_num+10000];
+            int first_data_ack_number = estado.getFirstDataAckNumber();
 
             while(segment < segment_num){
                 PDU np = nextPDU();
                 String data = new String(np.getData());
-                int seq_number = np.getSequenceNumber()/1024;
+                int seq_number = (np.getSequenceNumber() - first_data_ack_number)/1024;
 
                 file_parts[seq_number] = data;
 
                 if(seq_number > segment){
-                    PDU ack = new PDU(segment*1024, segment*1024, new String(), false, false, true, false, new byte[0]);
+                    PDU ack = new PDU(first_data_ack_number + segment*1024, first_data_ack_number + segment*1024, new String(), false, false, true, false, new byte[0]);
                     agente.sendPDU(ack,addressDest,7777);
                 } else{
                     while(segment < segment_num){
                         if(file_parts[segment] == null) break;
-                        else segment++;
+                        else{
+                            estado.setAckNumber(np.getSequenceNumber()+1024);
+                            segment++;
+                        }
                     }
                 }
             }

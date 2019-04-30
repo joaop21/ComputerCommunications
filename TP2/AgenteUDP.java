@@ -38,7 +38,7 @@ class AgenteUDP implements Runnable{
     public void run(){
         try{
             while(true){
-                byte[] receiveData = new byte[65527]; // tamanho maximo para dados
+                byte[] receiveData = new byte[66560]; // tamanho maximo para dados
                 // Constructs a DatagramPacket for receiving packets of length 'length'.
                 DatagramPacket receivedPacket = new DatagramPacket(receiveData, receiveData.length);
                 // Receives a datagram packet from this socket.

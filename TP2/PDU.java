@@ -8,6 +8,7 @@ public class PDU implements Serializable{
     private boolean fin;
     private boolean ack;
     private boolean psh;
+    private int receiveWindow;
     private long checksum;
     private byte[] data;
 
@@ -21,6 +22,9 @@ public class PDU implements Serializable{
         this.psh = psh;
         this.checksum = 0;
         this.data = dt;
+        // Window máxima = 66560 / 1024 = 65 - 10(precaução) = 55
+        // 66560 é o valor do buffer de chegada no AgenteUDP
+        this.receiveWindow = 55;
     }
 
     public int getSequenceNumber(){ return this.sequence_number; }
@@ -36,6 +40,8 @@ public class PDU implements Serializable{
     public Boolean getACK(){ return this.ack; }
 
     public Boolean getPSH(){ return this.psh; }
+
+    public int getReceiveWindow(){ return this.receiveWindow; }
 
     public long getChecksum(){ return this.checksum; }
 

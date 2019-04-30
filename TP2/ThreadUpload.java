@@ -9,14 +9,8 @@ import java.util.HashMap;
 class ThreadUpload extends Thread{
     AgenteUDP agente;
     TransfereCC tfcc;
+    Estado estado;
     InetAddress addressDest;
-    /*
-    LinkedList is a doubly-linked list implementation of the List and Deque interfaces.
-    LinkedList allows for constant-time insertions or removals using iterators, but only
-    sequential access of elements. In other words, LinkedList can be searched forward and backward
-    but the time it takes to traverse the list is directly proportional to the size of the list.
-    */
-    // LinkedList to process the PDUs
     LinkedList<PDU> received = new LinkedList<>();
     final Lock l = new ReentrantLock();
     final Condition empty  = l.newCondition();
@@ -24,6 +18,7 @@ class ThreadUpload extends Thread{
     public ThreadUpload(AgenteUDP agent, TransfereCC tf,InetAddress destip) throws UnknownHostException, IOException{
         agente = agent;
         tfcc = tf;
+        estado = new Estado();
         addressDest = destip;
     }
 
@@ -72,12 +67,14 @@ class ThreadUpload extends Thread{
     public void dataTransfer(){
 
         int num_segment = tfcc.segmentNumber();
-        int seq = 0;
+        int segment = 0;
 
-        for(int i = 0 ; i < num_segment ; i++ , seq += 1024){
-            String data = tfcc.getPartOfFile(seq);
-            PDU p = new PDU(seq, 0, "",false, false, false, true, data.getBytes());
+        for(int i = 0 ; i < num_segment ; i++ , segment += 1024){
+            String data = tfcc.getPartOfFile(segment);
+            PDU p = new PDU(estado.getSequenceNumber(), estado.getAckNumber(), "",false, false, false, true, data.getBytes());
             agente.sendPDU(p,addressDest,7777);
+            estado.incrementSequenceNumber(1024);
+
             try{
                 sleep(1);
             } catch(Exception e){
@@ -88,13 +85,13 @@ class ThreadUpload extends Thread{
                 PDU r = nextPDU();
                 if(r.getACK()){
                     String part = tfcc.getPartOfFile(r.getAckNumber());
-                    PDU np = new PDU(r.getAckNumber(), 0, "",false, false, false, true, data.getBytes());
+                    PDU np = new PDU(r.getAckNumber(), r.getSequenceNumber()+1, "",false, false, false, true, data.getBytes());
                     agente.sendPDU(np,addressDest,7777);
                 }
             }
         }
 
-        endConnection(seq);
+        endConnection(segment);
 
     }
 
@@ -105,20 +102,32 @@ class ThreadUpload extends Thread{
         // Recebe SYN
         while(true){
             PDU syn = nextPDU();
-            if(syn.getSYN() == true)
+            if(syn.getSYN() == true){
+                // inicia com um nº se sequencia random
+                estado.setInitialRandomSequenceNumber();
+                // sequence recebido é o numero de ack a enviar no pdu seguinte
+                estado.setAckNumber(syn.getSequenceNumber()+1);
+                estado.setReceiveWindow(syn.getReceiveWindow());
                 break;
+            }
         }
 
         // envia SYNACK
-        PDU synack = new PDU(1, 0, String.valueOf(tfcc.segmentNumber()), true, false, true, false, new byte[0]);
+        PDU synack = new PDU(estado.getSequenceNumber(), estado.getAckNumber(), String.valueOf(tfcc.segmentNumber()), true, false, true, false, new byte[0]);
         agente.sendPDU(synack,addressDest,7777);
+        estado.incrementSequenceNumber(1);
 
         // recebe ACK
         while(true){
             PDU ack = nextPDU();
-            if(ack.getACK() == true)
+            if(ack.getACK() == true){
+                estado.setAckNumber(ack.getSequenceNumber()+1);
                 break;
+            }
         }
+
+        estado.setFirstDataAckNumber(estado.getAckNumber());
+
     }
 
     /*
