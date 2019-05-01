@@ -24,7 +24,7 @@ public class PDU implements Serializable{
         this.data = dt;
         // Window máxima = 66560 / 1024 = 65 - 10(precaução) = 55
         // 66560 é o valor do buffer de chegada no AgenteUDP
-        this.receiveWindow = 55;
+        this.receiveWindow = 100;
     }
 
     public int getSequenceNumber(){ return this.sequence_number; }

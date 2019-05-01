@@ -10,7 +10,7 @@ import java.util.Arrays;
 class ThreadUpload extends Thread{
     AgenteUDP agente;
     TransfereCC tfcc;
-    Estado estado;
+    Estado estado = new Estado();
     InetAddress addressDest;
     LinkedList<PDU> received = new LinkedList<>();
     final Lock l = new ReentrantLock();
@@ -23,7 +23,6 @@ class ThreadUpload extends Thread{
     public ThreadUpload(AgenteUDP agent, TransfereCC tf,InetAddress destip) throws UnknownHostException, IOException{
         agente = agent;
         tfcc = tf;
-        estado = new Estado();
         addressDest = destip;
     }
 
@@ -34,27 +33,41 @@ class ThreadUpload extends Thread{
     public void recebePDU(PDU p){
         l.lock();
         try{
-            System.out.println("PDU from Host: " + this.addressDest + " FLAG: " + p.pdu() + " Seq Number: " + p.getSequenceNumber());
 
+            //System.out.println("PDU from Host: " + this.addressDest + " FLAG: " + p.pdu() + " Seq Number: " + p.getSequenceNumber() + " Ack Number: " + p.getAckNumber());
+
+            // In case that the transfer is being done
             if(estado.getEstado() == TransferState.ESTABLISHED && p.getACK() == true){
+                int index = (p.getAckNumber() - estado.getFirstDataSequenceNumber())/1024;
+
+                // in case of receiving the confirmation of the last segment
+                if(index >= validados.length){
+                    for(index -= 1; index >= 0 ; index--)
+                        validados[index] = 5; // confirmed
+
+                    estado.setNextState();
+                    return;
+                }
+
                 // checks if an ack has already been received
-                if(validados[p.getAckNumber() - estado.getFirstDataSequenceNumber()/1024] == 1){
+                if(validados[index] == 1){
                     if(!toRetransmit.contains(p.getAckNumber()))
                         toRetransmit.add(p.getAckNumber());
                 } else{
-                    int seg = p.getAckNumber() - estado.getFirstDataSequenceNumber()/1024;
-                    validados[seg] = 1; // one ack received
-                    seg--;
-                    for(; seg >= 0 ; seg--)
-                        validados[seg] = 5; // confirmed
+                    validados[index] = 1; // one ack received
+                    index--;
+                    for(; index >= 0 ; index--)
+                        validados[index] = 5; // confirmed
                 }
 
                 if(window < estado.getReceiveWindow()) window++;
+                return;
             }
 
             // Appends the specified element to the end of this list.
             received.add(p);
             empty.signal();
+
         } finally{
             l.unlock();
         }
@@ -86,9 +99,10 @@ class ThreadUpload extends Thread{
     public int validatedSegments(){
         int res = 0;
         for(int i : validados)
-            if(i == 5) res++;
+            if(i == 5 || i == 1) res++;
         return res;
     }
+
 
     /*
         Envia ficheiro para o destino
@@ -101,10 +115,10 @@ class ThreadUpload extends Thread{
 
         window = estado.getReceiveWindow();
         int segment = 0;
-        while(validatedSegments() < num_segment || segment < num_segment){
-            if(window < estado.getReceiveWindow()){
-                String data = tfcc.getPartOfFile(segment);
-                PDU p = new PDU(estado.getSequenceNumber(), estado.getAckNumber(), "",false, false, false, true, data.getBytes());
+        while(segment < num_segment){
+            if(window <= estado.getReceiveWindow() && window > 0){
+                String data = tfcc.getPartOfFile(estado.getSequenceNumber()-estado.getFirstDataSequenceNumber());
+                PDU p = new PDU(estado.getSequenceNumber(), estado.getAckNumber(), new String(),false, false, false, true, data.getBytes());
                 agente.sendPDU(p,addressDest,7777);
                 estado.incrementSequenceNumber(1024);
                 segment++;
@@ -112,47 +126,31 @@ class ThreadUpload extends Thread{
             }
 
             while(toRetransmit.size() > 0){
-                if(window < estado.getReceiveWindow()){
+                System.out.println("tou preso no retransmit");
+                if(window <= estado.getReceiveWindow() && window > 0){
                     int rn = toRetransmit.getFirst();
-                    String data = tfcc.getPartOfFile(rn);
-                    PDU p = new PDU(estado.getFirstDataSequenceNumber() + rn*1024, estado.getAckNumber(), "",false, false, false, true, data.getBytes());
+                    String data = tfcc.getPartOfFile(rn-estado.getFirstDataSequenceNumber());
+                    PDU p = new PDU(estado.getFirstDataSequenceNumber() + rn, estado.getAckNumber(), "",false, false, false, true, data.getBytes());
                     agente.sendPDU(p,addressDest,7777);
+                    window--;
                 }
             }
-
         }
 
-
-
-        /*
-        int num_segment = tfcc.segmentNumber();
-        int segment = 0;
-
-        for(int i = 0 ; i < num_segment ; i++ , segment += 1024){
-            String data = tfcc.getPartOfFile(segment);
-            PDU p = new PDU(estado.getSequenceNumber(), estado.getAckNumber(), "",false, false, false, true, data.getBytes());
-            agente.sendPDU(p,addressDest,7777);
-            estado.incrementSequenceNumber(1024);
-
-            try{
-                sleep(1);
-            } catch(Exception e){
-                e.printStackTrace();
-            }
-
-            while(received.size() > 0){
-                PDU r = nextPDU();
-                if(r.getACK()){
-                    String part = tfcc.getPartOfFile(r.getAckNumber());
-                    PDU np = new PDU(r.getAckNumber(), r.getSequenceNumber()+1, "",false, false, false, true, data.getBytes());
-                    agente.sendPDU(np,addressDest,7777);
+        while(validatedSegments() < num_segment){
+            while(toRetransmit.size() > 0){
+                System.out.println("tou preso");
+                if(window <= estado.getReceiveWindow() && window > 0){
+                    int rn = toRetransmit.getFirst();
+                    String data = tfcc.getPartOfFile(rn-estado.getFirstDataSequenceNumber());
+                    PDU p = new PDU(estado.getFirstDataSequenceNumber() + rn, estado.getAckNumber(), "",false, false, false, true, data.getBytes());
+                    agente.sendPDU(p,addressDest,7777);
+                    window--;
                 }
             }
-        }*/
+        }
 
-        estado.setNextState();
-        endConnection(segment);
-
+        System.out.println("acabei");
     }
 
     /*
@@ -194,22 +192,24 @@ class ThreadUpload extends Thread{
     /*
         Método que define o fim de uma conexão
     */
-    void endConnection(int fin_seq_number){
+    void endConnection(){
         // envia FIN
-        PDU fin = new PDU(fin_seq_number, 3, new String(), false, true, false, false, new byte[0]);
+        PDU fin = new PDU(estado.getSequenceNumber(), estado.getAckNumber(), new String(), false, true, false, false, new byte[0]);
         agente.sendPDU(fin,addressDest,7777);
 
         // recebe FINACK
         while(true){
-          PDU finack = nextPDU();
-          if(finack.getFIN() == true && finack.getACK() == true){
-              break;
+            PDU finack = nextPDU();
+            if(finack.getFIN() == true && finack.getACK() == true){
+                estado.setSequenceNumber(finack.getAckNumber());
+                estado.setAckNumber(finack.getSequenceNumber()+1);
+                break;
             }
-          }
+        }
 
-          // envia ACK
-          PDU ack = new PDU(fin_seq_number+2, 3, new String(), false, false, true, false, new byte[0]);
-          agente.sendPDU(ack,addressDest,7777);
+        // envia ACK
+        PDU ack = new PDU(estado.getSequenceNumber(), estado.getAckNumber(), new String(), false, false, true, false, new byte[0]);
+        agente.sendPDU(ack,addressDest,7777);
     }
 
     /*
@@ -220,6 +220,8 @@ class ThreadUpload extends Thread{
         beginConnection();
 
         dataTransfer();
+
+        endConnection();
 
         tfcc.removeConnection(addressDest);
 
