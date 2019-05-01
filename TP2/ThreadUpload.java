@@ -34,7 +34,7 @@ class ThreadUpload extends Thread{
         l.lock();
         try{
 
-            //System.out.println("PDU from Host: " + this.addressDest + " FLAG: " + p.pdu() + " Seq Number: " + p.getSequenceNumber() + " Ack Number: " + p.getAckNumber());
+            System.out.println("PDU from Host: " + this.addressDest + " FLAG: " + p.pdu() + " Seq Number: " + p.getSequenceNumber() + " Ack Number: " + p.getAckNumber());
 
             // In case that the transfer is being done
             if(estado.getEstado() == TransferState.ESTABLISHED && p.getACK() == true){
@@ -129,6 +129,7 @@ class ThreadUpload extends Thread{
                 System.out.println("tou preso no retransmit");
                 if(window <= estado.getReceiveWindow() && window > 0){
                     int rn = toRetransmit.getFirst();
+                    System.out.println(rn + "\n" + estado.getFirstDataSequenceNumber() + "\n" + (rn-estado.getFirstDataSequenceNumber()));
                     String data = tfcc.getPartOfFile(rn-estado.getFirstDataSequenceNumber());
                     PDU p = new PDU(estado.getFirstDataSequenceNumber() + rn, estado.getAckNumber(), "",false, false, false, true, data.getBytes());
                     agente.sendPDU(p,addressDest,7777);
