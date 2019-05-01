@@ -91,6 +91,7 @@ class ThreadDownload extends Thread{
 
         estado.setFirstDataSequenceNumber(estado.getSequenceNumber());
         estado.setFirstDataAckNumber(estado.getAckNumber());
+        estado.setNextState();
     }
 
     /*
@@ -98,27 +99,30 @@ class ThreadDownload extends Thread{
     */
     void endConnection(){
 
-        int fin_seq_number;
-
         // Recebe FIN
         while(true){
             PDU fin = nextPDU();
             if(fin.getFIN() == true){
-                fin_seq_number = fin.getSequenceNumber();
+                estado.setSequenceNumber(fin.getAckNumber());
+                estado.setAckNumber(fin.getSequenceNumber()+1);
                 break;
             }
         }
 
         // envia FINACK
-        PDU finack = new PDU(fin_seq_number+1, 2, new String(), false, true, true, false, new byte[0]);
+        PDU finack = new PDU(estado.getSequenceNumber(), estado.getAckNumber(), new String(), false, true, true, false, new byte[0]);
         agente.sendPDU(finack,addressDest,7777);
 
         // recebe ACK
         while(true){
             PDU ack = nextPDU();
-            if(ack.getACK() == true)
+            if(ack.getACK() == true){
+                estado.setSequenceNumber(ack.getAckNumber());
+                estado.setAckNumber(ack.getSequenceNumber()+1);
                 break;
+            }
         }
+        estado.setNextState();
     }
 
     /*

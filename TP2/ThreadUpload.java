@@ -121,6 +121,7 @@ class ThreadUpload extends Thread{
                 PDU p = new PDU(estado.getSequenceNumber(), estado.getAckNumber(), new String(),false, false, false, true, data.getBytes());
                 agente.sendPDU(p,addressDest,7777);
                 estado.incrementSequenceNumber(1024);
+                estado.incrementAckNumber(1);
                 segment++;
                 window--;
             }
@@ -129,8 +130,8 @@ class ThreadUpload extends Thread{
                 System.out.println("tou preso no retransmit");
                 if(window <= estado.getReceiveWindow() && window > 0){
                     int rn = toRetransmit.getFirst();
-                    System.out.println(rn + "\n" + estado.getFirstDataSequenceNumber() + "\n" + (rn-estado.getFirstDataSequenceNumber()));
-                    String data = tfcc.getPartOfFile(rn-estado.getFirstDataSequenceNumber());
+                    System.out.println(rn + "\n" + estado.getFirstDataAckNumber() + "\n" + (rn-estado.getFirstDataAckNumber()));
+                    String data = tfcc.getPartOfFile(rn-estado.getFirstDataAckNumber());
                     PDU p = new PDU(estado.getFirstDataSequenceNumber() + rn, estado.getAckNumber(), "",false, false, false, true, data.getBytes());
                     agente.sendPDU(p,addressDest,7777);
                     window--;
@@ -185,7 +186,7 @@ class ThreadUpload extends Thread{
             }
         }
 
-        estado.setFirstDataAckNumber(estado.getAckNumber());
+        estado.setFirstDataAckNumber(estado.getAckNumber()-1);
         estado.setFirstDataSequenceNumber(estado.getSequenceNumber());
         estado.setNextState();
     }

@@ -66,6 +66,8 @@ public class Estado{
 
     public void setFirstDataAckNumber(int fdan){this.first_data_ack_number = fdan;}
 
+    public void incrementAckNumber(int an){this.ack_number += an;}
+
     public void setReceiveWindow(int rw){this.receiveWindow = rw;}
 
     public void setCongestionWindow(int cw){this.congestionWindow = cw;}
