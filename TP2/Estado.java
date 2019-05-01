@@ -1,16 +1,9 @@
 import java.util.Random;
 
 enum State {
-  LISTEN,
-  SYN_SENT,
-  SYN_RECEIVED,
+  CONNECTING,
   ESTABLISHED,
-  FIN_WAIT_1,
-  FIN_WAIT_2,
-  CLOSE_WAIT,
-  CLOSING,
-  LAST_ACK,
-  TIME_WAIT,
+  DISCONNECTING,
   CLOSED
 }
 
@@ -25,7 +18,7 @@ public class Estado{
     private int timeout;
 
     public Estado(){
-        this.estado = State.LISTEN;
+        this.estado = State.CONNECTING;
         this.sequence_number = 0;
         this.ack_number = 0;
         this.first_data_ack_number = 0;
@@ -52,6 +45,20 @@ public class Estado{
     public int getTimeout(){return this.timeout;}
 
 
+    public void setNextState(){
+        switch(estado){
+            case CONNECTING:
+                estado = State.ESTABLISHED;
+                break;
+            case ESTABLISHED:
+                estado = State.DISCONNECTING;
+                break;
+            case DISCONNECTING:
+                estado = State.CLOSED;
+                break;
+        }
+    }
+
     public void setSequenceNumber(int sn){this.sequence_number = sn;}
 
     public void incrementSequenceNumber(int isn){this.sequence_number += isn;}
@@ -71,47 +78,6 @@ public class Estado{
     public void setInitialRandomSequenceNumber(){
         Random rand = new Random();
         this.sequence_number = rand.nextInt(50);
-    }
-
-    public State getNextState(){
-
-        switch(estado){
-            case LISTEN:
-                    estado = State.SYN_SENT;
-                    break;
-            case SYN_SENT:
-                    estado = State.SYN_RECEIVED;
-                    break;
-            case SYN_RECEIVED:
-                    estado = State.ESTABLISHED;
-                    break;
-            case ESTABLISHED:
-                    estado = State.FIN_WAIT_1;
-                    break;
-            case FIN_WAIT_1:
-                    estado = State.FIN_WAIT_2;
-                    break;
-            case FIN_WAIT_2:
-                    estado = State.CLOSE_WAIT;
-                    break;
-            case CLOSE_WAIT:
-                    estado = State.CLOSING;
-                    break;
-            case CLOSING:
-                    estado = State.LAST_ACK;
-                    break;
-            case LAST_ACK:
-                    estado = State.TIME_WAIT;
-                    break;
-            case TIME_WAIT:
-                    estado = State.CLOSED;
-                    break;
-            case CLOSED:
-                    estado = State.CLOSED;
-                    break;
-        }
-
-        return estado;
     }
 
 }

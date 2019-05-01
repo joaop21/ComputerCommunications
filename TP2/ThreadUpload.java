@@ -5,6 +5,7 @@ import java.util.concurrent.locks.*;
 import java.nio.file.Files;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Arrays;
 
 class ThreadUpload extends Thread{
     AgenteUDP agente;
@@ -14,6 +15,9 @@ class ThreadUpload extends Thread{
     LinkedList<PDU> received = new LinkedList<>();
     final Lock l = new ReentrantLock();
     final Condition empty  = l.newCondition();
+    volatile int window = 0;
+    LinkedList<Integer> toRetransmit = new LinkedList<>();
+
 
     public ThreadUpload(AgenteUDP agent, TransfereCC tf,InetAddress destip) throws UnknownHostException, IOException{
         agente = agent;
@@ -67,6 +71,26 @@ class ThreadUpload extends Thread{
     public void dataTransfer(){
 
         int num_segment = tfcc.segmentNumber();
+        Boolean validados[] = new Boolean[num_segment];
+        Arrays.fill(validados, false);
+
+        window = estado.getReceiveWindow();
+        int segment = 0;
+        while(validados.length < num_segment || segment < num_segment){
+            while(window < estado.getReceiveWindow()){
+                String data = tfcc.getPartOfFile(segment);
+                PDU p = new PDU(estado.getSequenceNumber(), estado.getAckNumber(), "",false, false, false, true, data.getBytes());
+                agente.sendPDU(p,addressDest,7777);
+                estado.incrementSequenceNumber(1024);
+                segment++;
+                window--;
+            }
+        }
+
+
+
+        /*
+        int num_segment = tfcc.segmentNumber();
         int segment = 0;
 
         for(int i = 0 ; i < num_segment ; i++ , segment += 1024){
@@ -89,8 +113,9 @@ class ThreadUpload extends Thread{
                     agente.sendPDU(np,addressDest,7777);
                 }
             }
-        }
+        }*/
 
+        estado.setNextState();
         endConnection(segment);
 
     }
@@ -127,7 +152,7 @@ class ThreadUpload extends Thread{
         }
 
         estado.setFirstDataAckNumber(estado.getAckNumber());
-
+        estado.setNextState();
     }
 
     /*
