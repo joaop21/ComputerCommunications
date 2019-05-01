@@ -2,6 +2,7 @@ import java.net.*;
 import java.io.*;
 import java.util.LinkedList;
 import java.util.concurrent.locks.*;
+import java.util.Arrays;
 
 class ThreadDownload extends Thread{
     AgenteUDP agente;
@@ -88,6 +89,7 @@ class ThreadDownload extends Thread{
         PDU ack = new PDU(estado.getSequenceNumber(), estado.getAckNumber(), new String(), false, false, true, false, new byte[0]);
         agente.sendPDU(ack,addressDest,7777);
 
+        estado.setFirstDataSequenceNumber(estado.getSequenceNumber());
         estado.setFirstDataAckNumber(estado.getAckNumber());
     }
 
@@ -156,10 +158,34 @@ class ThreadDownload extends Thread{
             beginConnection();
 
             int segment = 0;
-            String file_parts[] = new String[segment_num+10000];
+            String file_parts[] = new String[segment_num];
+            Arrays.fill(file_parts, "");
             int first_data_ack_number = estado.getFirstDataAckNumber();
 
             while(segment < segment_num){
+                PDU np = nextPDU();
+                int seq_number = (np.getSequenceNumber() - first_data_ack_number)/1024;
+
+                String data = new String(np.getData());
+                file_parts[seq_number] = data;
+
+                if(seq_number > segment){
+                    PDU retransmit = new PDU(estado.getSequenceNumber(),first_data_ack_number + segment*1024, new String(), false, false, true, false, new byte[0]);
+                    agente.sendPDU(retransmit,addressDest,7777);
+                } else{
+                    while(segment < segment_num){
+                        if(file_parts[segment] == "") break;
+                        segment++;
+                        estado.incrementSequenceNumber(1);
+                    }
+                    estado.setAckNumber(first_data_ack_number + segment*1024);
+                    PDU pdu = new PDU(estado.getSequenceNumber(),estado.getAckNumber(), new String(), false, false, true, false, new byte[0]);
+                    agente.sendPDU(pdu,addressDest,7777);
+                }
+
+            }
+
+            /*while(segment < segment_num){
                 PDU np = nextPDU();
                 String data = new String(np.getData());
                 int seq_number = (np.getSequenceNumber() - first_data_ack_number)/1024;
@@ -178,7 +204,7 @@ class ThreadDownload extends Thread{
                         }
                     }
                 }
-            }
+            }*/
 
             endConnection();
 

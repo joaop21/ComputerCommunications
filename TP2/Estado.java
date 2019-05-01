@@ -1,15 +1,9 @@
 import java.util.Random;
 
-enum State {
-  CONNECTING,
-  ESTABLISHED,
-  DISCONNECTING,
-  CLOSED
-}
-
 public class Estado{
-    private State estado;
+    private TransferState estado;
     private int sequence_number;
+    private int first_data_seq_number;
     private int ack_number;
     private int first_data_ack_number;
     private int mss;
@@ -18,8 +12,9 @@ public class Estado{
     private int timeout;
 
     public Estado(){
-        this.estado = State.CONNECTING;
+        this.estado = TransferState.CONNECTING;
         this.sequence_number = 0;
+        this.first_data_seq_number = 0;
         this.ack_number = 0;
         this.first_data_ack_number = 0;
         this.mss = 1024;
@@ -28,9 +23,11 @@ public class Estado{
         this.timeout = 0;
     }
 
-    public State getEstado(){return this.estado;}
+    public TransferState getEstado(){return this.estado;}
 
     public int getSequenceNumber(){return this.sequence_number;}
+
+    public int getFirstDataSequenceNumber(){return this.first_data_seq_number;}
 
     public int getAckNumber(){return this.ack_number;}
 
@@ -48,18 +45,20 @@ public class Estado{
     public void setNextState(){
         switch(estado){
             case CONNECTING:
-                estado = State.ESTABLISHED;
+                estado = TransferState.ESTABLISHED;
                 break;
             case ESTABLISHED:
-                estado = State.DISCONNECTING;
+                estado = TransferState.DISCONNECTING;
                 break;
             case DISCONNECTING:
-                estado = State.CLOSED;
+                estado = TransferState.CLOSED;
                 break;
         }
     }
 
     public void setSequenceNumber(int sn){this.sequence_number = sn;}
+
+    public void setFirstDataSequenceNumber(int fdsn){this.first_data_seq_number = fdsn;}
 
     public void incrementSequenceNumber(int isn){this.sequence_number += isn;}
 
