@@ -2,6 +2,8 @@ import java.net.*;
 import java.io.*;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.locks.*;
 
 public class TransfereCC extends Thread {
@@ -15,7 +17,7 @@ public class TransfereCC extends Thread {
     Map<InetAddress,ThreadUpload> threads_upload = new HashMap<>();
     ThreadDownload tfd;
     Lock l = new ReentrantLock();
-    Map<Integer,String> segmented_file = new HashMap<>();
+    List<PDU> segmentsToSend = new ArrayList<>();
 
     ////////////////////////// CONSTRUTORES //////////////////////////
     /*
@@ -27,7 +29,8 @@ public class TransfereCC extends Thread {
         download = false;
         fich = f;
         filename = f.getName();
-        segmented_file = divideFile(fich);
+        Map<Integer,String> segmented_file = divideFile(fich);
+        segmentsToSend = generateAllPDUs(segmented_file);
         destinationIP = "";
     }
 
@@ -140,12 +143,12 @@ public class TransfereCC extends Thread {
     }
 
     ////////////////////////// Concurrent Acess //////////////////////////
-    public synchronized String getPartOfFile(int file_part){
-        return segmented_file.get(file_part);
+    public synchronized PDU getPDU(int segment){
+        return segmentsToSend.get(segment).clone();
     }
 
-    public synchronized int segmentNumber(){
-        return segmented_file.size();
+    public synchronized int numberOfPDUs(){
+        return segmentsToSend.size()-3;
     }
 
     ////////////////////////// Auxiliar //////////////////////////
@@ -154,14 +157,12 @@ public class TransfereCC extends Thread {
     */
     public Map<Integer,String> divideFile(File file){
         try{
-            // Creates a FileInputStream by opening a connection to an actual file, the file named by the File object file in the file system.
             FileInputStream fis = new FileInputStream(file);
-            // Creates an InputStreamReader that uses the default charset.
             InputStreamReader isr = new InputStreamReader(fis);
-            // Returns the length of the file denoted by this abstract pathname.
+
             long file_length = file.length();
             char[] file_char = new char[(int)file_length];
-            // Reads characters into a portion of an array.
+
             isr.read(file_char, 0, (int)file_length);
 
             char[] lidos;
@@ -195,5 +196,34 @@ public class TransfereCC extends Thread {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /*
+        Gera todos os PDUs a enviar
+    */
+    public List<PDU> generateAllPDUs(Map<Integer,String> chunks){
+        List<PDU> res = new ArrayList<>();
+        int chunks_number = chunks.size();
+
+        // first synack
+        PDU synack = new PDU(0, 0, String.valueOf(chunks_number), true, false, true, false, new byte[0]);
+        res.add(synack);
+
+        // data to transfer
+        int segment = 0;
+        for(; (segment/1024) < chunks_number ; segment += 1024){
+            String data = chunks.get(segment);
+            PDU dataPDU = new PDU(segment+1,0,new String(),false,false,false,true,data.getBytes());
+            res.add(dataPDU);
+        }
+
+        // end connection
+        PDU fin = new PDU(segment+1,0,new String(),false,true,false,false,new byte[0]);
+        res.add(fin);
+
+        PDU ack = new PDU(segment+2,0,new String(),false,false,true,false,new byte[0]);
+        res.add(ack);
+
+        return res;
     }
 }

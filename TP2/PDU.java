@@ -27,6 +27,19 @@ public class PDU implements Serializable{
         this.receiveWindow = 100;
     }
 
+    public PDU(PDU np){
+        this.sequence_number = np.getSequenceNumber();
+        this.ack_number = np.getAckNumber();
+        this.options = np.getOptions();
+        this.syn = np.getSYN();
+        this.fin = np.getFIN();
+        this.ack = np.getACK();
+        this.psh = np.getPSH();
+        this.checksum = np.getChecksum();
+        this.data = np.getData();
+        this.receiveWindow = np.getReceiveWindow();
+    }
+
     public int getSequenceNumber(){ return this.sequence_number; }
 
     public int getAckNumber(){ return this.ack_number; }
@@ -46,6 +59,10 @@ public class PDU implements Serializable{
     public long getChecksum(){ return this.checksum; }
 
     public byte[] getData(){ return this.data; }
+
+    public void incrementSequenceNumber(int increment){this.sequence_number += increment;}
+
+    public void setAckNumber(int nack){this.ack_number = nack;}
 
     public void setChecksum(long check){ this.checksum = check; }
 
@@ -112,6 +129,10 @@ public class PDU implements Serializable{
         if(fin==true && ack==true) return "FINACK";
         if((syn==false && ack==true) || (fin==false && ack==true)) return "ACK";
         return "DATA";
+    }
+
+    public PDU clone(){
+        return new PDU(this);
     }
 
 }
