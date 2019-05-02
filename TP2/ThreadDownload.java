@@ -46,12 +46,10 @@ class ThreadDownload extends Thread{
         l.lock();
         PDU p;
         try{
-
             while(received.size() == 0)
                 empty.await();
 
             p = received.removeFirst();
-
             return p;
         } catch(InterruptedException e){
             e.printStackTrace();
@@ -80,7 +78,7 @@ class ThreadDownload extends Thread{
             PDU synack = nextPDU();
             if(synack.getSYN() == true && synack.getACK() == true){
                 segment_num = Integer.valueOf(synack.getOptions());
-                estado.setAckNumber(syn.getSequenceNumber()+1);
+                estado.setAckNumber(synack.getSequenceNumber()+1);
                 break;
             }
         }

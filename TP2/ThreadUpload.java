@@ -15,7 +15,8 @@ class ThreadUpload extends Thread{
     LinkedList<PDU> received = new LinkedList<>();
     final Lock l = new ReentrantLock();
     final Condition empty  = l.newCondition();
-    volatile int window = 0;
+    final Condition finalAck  = l.newCondition();
+    volatile int window = 1;
     volatile int validados[];
     int pdu_number = 0;
 
@@ -44,6 +45,7 @@ class ThreadUpload extends Thread{
                     for(index -= 1; index >= 0 ; index--)
                         validados[index] = 5; // confirmed
 
+                    finalAck.signal();
                     estado.setNextState();
                     return;
                 }
@@ -156,7 +158,7 @@ class ThreadUpload extends Thread{
         validados = new int[data_segments];
         Arrays.fill(validados, 0);
 
-        while(pdu_number < data_segments){
+        while(pdu_number <= data_segments){
             if(window <= estado.getReceiveWindow() && window > 0){
                 PDU packet = tfcc.getPDU(pdu_number);
                 packet.incrementSequenceNumber(estado.getSequenceNumber());
@@ -165,6 +167,15 @@ class ThreadUpload extends Thread{
                 window--;
             }
         }
+        System.out.println("acabei transf");
+
+        l.lock();
+        try{
+            finalAck.await();
+        } catch(Exception e){
+            e.printStackTrace();
+        } finally{ l.unlock();}
+
     }
 
 
