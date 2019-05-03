@@ -164,6 +164,7 @@ class ThreadDownload extends Thread{
             Arrays.fill(file_parts, "");
             int first_data_ack_number = estado.getFirstDataAckNumber();
 
+            int retry = 0;
             while(segment < segment_num){
                 PDU np = nextPDU();
                 int seq_number = (np.getSequenceNumber() - first_data_ack_number)/1024;
@@ -172,10 +173,14 @@ class ThreadDownload extends Thread{
                 file_parts[seq_number] = data;
 
                 if(seq_number > segment){
-                    System.out.println(first_data_ack_number + "\n" + segment + "\n" + (first_data_ack_number + (segment * 1024)));
-                    PDU retransmit = new PDU(estado.getSequenceNumber(),first_data_ack_number + (segment * 1024), new String(), false, false, true, false, new byte[0]);
-                    agente.sendPDU(retransmit,addressDest,7777);
+                    if(retry <= 3){
+                        retry++;
+                        System.out.println(first_data_ack_number + "\n" + segment + "\n" + (first_data_ack_number + (segment * 1024)));
+                        PDU retransmit = new PDU(estado.getSequenceNumber(),first_data_ack_number + (segment * 1024), new String(), false, false, true, false, new byte[0]);
+                        agente.sendPDU(retransmit,addressDest,7777);
+                    }
                 } else{
+                    retry = 0;
                     while(segment < segment_num){
                         if(file_parts[segment] == "") break;
                         segment++;
