@@ -14,8 +14,8 @@ class ThreadUpload extends Thread{
     InetAddress addressDest;
     LinkedList<PDU> received = new LinkedList<>();
     final Lock l = new ReentrantLock();
-    final Condition empty  = l.newCondition();
-    final Condition finalAck  = l.newCondition();
+    final Condition empty = l.newCondition();
+    final Condition finalAck = l.newCondition();
     volatile int window = 1;
     volatile int validados[];
     int pdu_number = 0;
@@ -63,14 +63,6 @@ class ThreadUpload extends Thread{
         return null;
     }
 
-    public int validatedSegments(){
-        int res = 0;
-        for(int i : validados)
-            if(i == 5 || i == 1) res++;
-        return res;
-    }
-
-
     /*
         Método que define o início de uma conexão
     */
@@ -108,6 +100,12 @@ class ThreadUpload extends Thread{
     }
 
 
+    public void signalFinalAck(){
+        l.lock();
+        finalAck.signal();
+        l.unlock();
+    }
+
     /*
         Envia ficheiro para o destino
     */
@@ -119,16 +117,22 @@ class ThreadUpload extends Thread{
         new Thread(new UploadReceiver(tfcc,this, estado, agente)).start();
 
         while(pdu_number <= data_segments){
-            if(window <= estado.getReceiveWindow() && window > 0){
+            if(window <= estado.getProperWindow() && window > 0){
                 PDU packet = tfcc.getPDU(pdu_number);
                 packet.incrementSequenceNumber(estado.getSequenceNumber());
+                estado.incrementAckNumber(1);
+                packet.setAckNumber(estado.getAckNumber());
                 agente.sendPDU(packet,addressDest,7777);
                 pdu_number++;
                 window--;
             }
-        }
 
-        System.out.println("esperando ultimo ack");
+            try{
+                Thread.sleep(1);
+            } catch(Exception e){
+                e.printStackTrace();
+            }
+        }
 
         l.lock();
         try{

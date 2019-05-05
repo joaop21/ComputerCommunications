@@ -8,7 +8,10 @@ public class Estado{
     private int first_data_ack_number;
     private int mss;
     private int receiveWindow;
-    private int congestionWindow;
+    private CongestionControlPhase cc_phase;
+    private int dupAckCount;
+    private int ssthresh;
+    private float congestionWindow;
     private int timeout;
 
     public Estado(){
@@ -18,8 +21,11 @@ public class Estado{
         this.ack_number = 0;
         this.first_data_ack_number = 0;
         this.mss = 1024;
-        this.receiveWindow = 0;
-        this.congestionWindow = 0;
+        this.receiveWindow = 1;
+        this.cc_phase = CongestionControlPhase.SlowStart;
+        this.dupAckCount = 0;
+        this.ssthresh = 64;
+        this.congestionWindow = 1;
         this.timeout = 0;
     }
 
@@ -37,7 +43,7 @@ public class Estado{
 
     public int getReceiveWindow(){return this.receiveWindow;}
 
-    public int getCongestionWindow(){return this.congestionWindow;}
+    public int getCongestionWindow(){return (int)this.congestionWindow;}
 
     public int getTimeout(){return this.timeout;}
 
@@ -86,7 +92,72 @@ public class Estado{
     a janela de fluxo
     */
     public int getProperWindow(){
-        return Math.min(this.congestionWindow, this.receiveWindow);
+        return Math.min((int)this.congestionWindow, this.receiveWindow);
     }
 
+
+    /**
+        Método que controla a congestão quando é recebido um novo Ack
+    */
+    public void newAckReceived(){
+        switch(this.cc_phase){
+            case SlowStart:
+                this.congestionWindow++;
+                if(this.congestionWindow >= this.ssthresh) this.cc_phase = CongestionControlPhase.CongestionAvoidance;
+                this.dupAckCount = 0;
+                break;
+            case CongestionAvoidance:
+                this.congestionWindow += 1/(Math.floor(this.congestionWindow));
+                this.dupAckCount = 0;
+                break;
+            case FastRecovery:
+                this.congestionWindow = this.ssthresh;
+                this.dupAckCount = 0;
+                this.cc_phase = CongestionControlPhase.CongestionAvoidance;
+                break;
+        }
+    }
+
+    /**
+        Método que controla a congestão quando é recebido um Ack Duplicado
+    */
+    public void duplicatedAckReceived(){
+        switch(this.cc_phase){
+            case SlowStart:
+                this.dupAckCount++;
+                if(this.dupAckCount == 3){
+                    this.ssthresh = ((int)this.congestionWindow)/2;
+                    this.congestionWindow = this.ssthresh + 3;
+                    this.cc_phase = CongestionControlPhase.FastRecovery;
+                }
+                break;
+            case CongestionAvoidance:
+                this.dupAckCount++;
+                if(this.dupAckCount == 3){
+                    this.ssthresh = ((int)this.congestionWindow)/2;
+                    this.congestionWindow = this.ssthresh + 3;
+                    this.cc_phase = CongestionControlPhase.FastRecovery;
+                }
+                break;
+            case FastRecovery:
+                this.congestionWindow++;
+                break;
+        }
+    }
+
+    /**
+        Método que controla a congestão quando ocorre um timeout
+    */
+    public void timeoutReceived(){
+        this.ssthresh = ((int)this.congestionWindow)/2;
+        this.congestionWindow = 1;
+        this.dupAckCount = 0;
+    }
+
+}
+
+enum CongestionControlPhase{
+    SlowStart,
+    CongestionAvoidance,
+    FastRecovery
 }

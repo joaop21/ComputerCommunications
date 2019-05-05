@@ -24,7 +24,8 @@ class UploadReceiver implements Runnable{
                     for(index -= 1; index >= 0 ; index--)
                         tup.validados[index] = 5; // confirmed
 
-                    tup.finalAck.signal();
+                    tup.signalFinalAck();
+                    estado.newAckReceived();
                     estado.setNextState();
                     return;
                 }
@@ -33,24 +34,30 @@ class UploadReceiver implements Runnable{
                 if(tup.validados[index] == 1){
                     System.out.println("PDU from Host: " + tup.addressDest + " FLAG: " + p.pdu() +
                                        " Seq Number: " + p.getSequenceNumber() + " Ack Number: " + p.getAckNumber());
+
+                    estado.duplicatedAckReceived();
+
                     // retransmits PDU
                     PDU retransmit = tfcc.getPDU(index+1);
                     retransmit.incrementSequenceNumber(estado.getSequenceNumber());
                     retransmit.setAckNumber(p.getSequenceNumber()+1);
                     agente.sendPDU(retransmit,tup.addressDest,7777);
+                } else{
+                    tup.validados[index] = 1; // one ack received
+                    // validate the smaller PDUs
+                    for(index -= 1; index >= 0 ; index--){
+                        if(tup.validados[index] < 5)
+                            if(tup.window < estado.getProperWindow()){
+                                tup.window++;
+                                estado.newAckReceived();
+                            }
+
+                        tup.validados[index] = 5;
+                    }
+
+                    if(tup.window < estado.getProperWindow()) tup.window++;
+                    estado.newAckReceived();
                 }
-
-                tup.validados[index] = 1; // one ack received
-                // validate the smaller PDUs
-                for(index -= 1; index >= 0 ; index--){
-                    if(tup.validados[index] < 5)
-                        if(tup.window < estado.getReceiveWindow()) tup.window++;
-
-                    tup.validados[index] = 5;
-                }
-
-
-                if(tup.window < estado.getReceiveWindow()) tup.window++;
             }
         }
     }
