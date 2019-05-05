@@ -1,4 +1,5 @@
 import java.util.concurrent.locks.*;
+import java.text.DecimalFormat;
 
 public class ConsoleProgressBar implements Runnable{
     Lock l = new ReentrantLock();
@@ -27,8 +28,12 @@ public class ConsoleProgressBar implements Runnable{
             l.lock();
             try{
                 wait.await();
-                System.out.print("Processing: " + (max_segments%progress) + "% " + animationChars[progress % 4] + "\r");
-            } catch(Exception e){
+		float percentage = ((float)progress/(float)max_segments)*100;
+		DecimalFormat df = new DecimalFormat();
+		df.setMaximumFractionDigits(2);
+                System.out.print("Downloading: " + df.format(percentage) + "% " + animationChars[progress % 4] + "\r");
+		if(progress == max_segments) break;
+	    } catch(Exception e){
                 e.printStackTrace();
             } finally{
                 l.unlock();
@@ -36,6 +41,6 @@ public class ConsoleProgressBar implements Runnable{
 
         }
 
-        System.out.println("Processing: Done!          ");
+        System.out.println("Downloading: Done!          ");
     }
 }
