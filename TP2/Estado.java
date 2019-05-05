@@ -78,7 +78,15 @@ public class Estado{
     */
     public void setInitialRandomSequenceNumber(){
         Random rand = new Random();
-        this.sequence_number = rand.nextInt(50);
+        this.sequence_number = rand.nextInt(1000);
+    }
+
+    /**
+        Método que retorna a menor janela, considerando a janela de congestão e
+    a janela de fluxo
+    */
+    public int getProperWindow(){
+        return Math.min(this.congestionWindow, this.receiveWindow);
     }
 
 }

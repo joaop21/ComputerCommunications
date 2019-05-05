@@ -173,9 +173,8 @@ class ThreadDownload extends Thread{
                 file_parts[seq_number] = data;
 
                 if(seq_number > segment){
-                    if(retry <= 3){
-                        retry++;
-                        System.out.println(first_data_ack_number + "\n" + segment + "\n" + (first_data_ack_number + (segment * 1024)));
+                    retry++;
+                    if(retry < 3){
                         PDU retransmit = new PDU(estado.getSequenceNumber(),first_data_ack_number + (segment * 1024), new String(), false, false, true, false, new byte[0]);
                         agente.sendPDU(retransmit,addressDest,7777);
                     }

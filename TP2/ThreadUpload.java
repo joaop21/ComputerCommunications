@@ -34,47 +34,6 @@ class ThreadUpload extends Thread{
     public void recebePDU(PDU p){
         l.lock();
         try{
-            System.out.println("PDU from Host: " + this.addressDest + " FLAG: " + p.pdu() +
-                               " Seq Number: " + p.getSequenceNumber() + " Ack Number: " + p.getAckNumber());
-
-            if(estado.getEstado() == TransferState.ESTABLISHED && p.getACK() == true){
-                int index = (p.getAckNumber() - estado.getSequenceNumber() - 1)/1024;
-
-                // in case of receiving the confirmation of the last segment
-                if(index >= validados.length){
-                    for(index -= 1; index >= 0 ; index--)
-                        validados[index] = 5; // confirmed
-
-                    finalAck.signal();
-                    estado.setNextState();
-                    return;
-                }
-
-                // checks if an ack has already been received
-                if(validados[index] == 1){
-                    // retransmits PDU
-                    PDU retransmit = tfcc.getPDU(index+1);
-                    retransmit.incrementSequenceNumber(estado.getSequenceNumber());
-                    retransmit.setAckNumber(p.getSequenceNumber()+1);
-                    agente.sendPDU(retransmit,addressDest,7777);
-                    return;
-                }
-
-                validados[index] = 1; // one ack received
-                // validate the smaller PDUs
-                for(index -= 1; index >= 0 ; index--){
-
-                    if(validados[index] == 1)
-                        if(window < estado.getReceiveWindow()) window++;
-
-                    validados[index] = 5;
-                }
-
-
-                if(window < estado.getReceiveWindow()) window++;
-                return;
-            }
-
             // Appends the specified element to the end of this list.
             received.add(p);
             empty.signal();
@@ -153,10 +112,11 @@ class ThreadUpload extends Thread{
         Envia ficheiro para o destino
     */
     public void dataTransfer(){
-
         int data_segments = tfcc.numberOfPDUs();
         validados = new int[data_segments];
-        Arrays.fill(validados, 0);
+        Arrays.fill(validados, -1);
+
+        new Thread(new UploadReceiver(tfcc,this, estado, agente)).start();
 
         while(pdu_number <= data_segments){
             if(window <= estado.getReceiveWindow() && window > 0){
@@ -167,7 +127,6 @@ class ThreadUpload extends Thread{
                 window--;
             }
         }
-        System.out.println("acabei transf");
 
         l.lock();
         try{
