@@ -29,7 +29,7 @@ class ThreadDownload extends Thread{
     public void recebePDU(PDU p){
         l.lock();
         try{
-            System.out.println("PDU from Host: " + this.addressDest + " FLAG: " + p.pdu() + " Seq Number: " + p.getSequenceNumber() + " Ack Number: " + p.getAckNumber());
+            //System.out.println("PDU from Host: " + this.addressDest + " FLAG: " + p.pdu() + " Seq Number: " + p.getSequenceNumber() + " Ack Number: " + p.getAckNumber());
             // Appends the specified element to the end of this list.
             received.add(p);
             empty.signal();
@@ -175,6 +175,7 @@ class ThreadDownload extends Thread{
                 if(seq_number > segment){
                     retry++;
                     if(retry < 3){
+                        System.out.println("Falta-me o " + seq_number);
                         PDU retransmit = new PDU(estado.getSequenceNumber(),first_data_ack_number + (segment * 1024), new String(), false, false, true, false, new byte[0]);
                         agente.sendPDU(retransmit,addressDest,7777);
                     }

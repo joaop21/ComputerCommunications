@@ -15,11 +15,8 @@ class UploadReceiver implements Runnable{
 
         while(true){
             PDU p = tup.nextPDU();
-            System.out.println("PDU from Host: " + tup.addressDest + " FLAG: " + p.pdu() +
-                               " Seq Number: " + p.getSequenceNumber() + " Ack Number: " + p.getAckNumber());
 
             if(p.getACK() == true){
-                System.out.println("cheguei1");
                 int index = (p.getAckNumber() - estado.getSequenceNumber() - 1)/1024;
 
                 // in case of receiving the confirmation of the last segment
@@ -34,7 +31,8 @@ class UploadReceiver implements Runnable{
 
                 // checks if an ack has already been received
                 if(tup.validados[index] == 1){
-                    System.out.println("cheguei2");
+                    System.out.println("PDU from Host: " + tup.addressDest + " FLAG: " + p.pdu() +
+                                       " Seq Number: " + p.getSequenceNumber() + " Ack Number: " + p.getAckNumber());
                     // retransmits PDU
                     PDU retransmit = tfcc.getPDU(index+1);
                     retransmit.incrementSequenceNumber(estado.getSequenceNumber());

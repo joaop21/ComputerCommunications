@@ -128,6 +128,8 @@ class ThreadUpload extends Thread{
             }
         }
 
+        System.out.println("esperando ultimo ack");
+
         l.lock();
         try{
             finalAck.await();
