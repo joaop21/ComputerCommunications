@@ -159,6 +159,9 @@ class ThreadDownload extends Thread{
         try{
             beginConnection();
 
+            ConsoleProgressBar cpb = new ConsoleProgressBar(segment_num);
+            new Thread(cpb).start();
+
             int segment = 0;
             String file_parts[] = new String[segment_num];
             Arrays.fill(file_parts, "");
@@ -184,6 +187,7 @@ class ThreadDownload extends Thread{
                     while(segment < segment_num){
                         if(file_parts[segment] == "") break;
                         segment++;
+                        cpb.incrementProgress();
                         estado.incrementSequenceNumber(1);
                     }
                     estado.setAckNumber(first_data_ack_number + segment*1024);
