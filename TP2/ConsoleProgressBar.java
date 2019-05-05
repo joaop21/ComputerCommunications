@@ -28,12 +28,12 @@ public class ConsoleProgressBar implements Runnable{
             l.lock();
             try{
                 wait.await();
-		float percentage = ((float)progress/(float)max_segments)*100;
-		DecimalFormat df = new DecimalFormat();
-		df.setMaximumFractionDigits(2);
+		        float percentage = ((float)progress/(float)max_segments)*100;
+		        DecimalFormat df = new DecimalFormat();
+		        df.setMaximumFractionDigits(2);
                 System.out.print("Downloading: " + df.format(percentage) + "% " + animationChars[progress % 4] + "\r");
-		if(progress == max_segments) break;
-	    } catch(Exception e){
+		        if(progress == max_segments) break;
+	        } catch(Exception e){
                 e.printStackTrace();
             } finally{
                 l.unlock();
