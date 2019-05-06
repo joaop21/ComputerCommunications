@@ -93,10 +93,8 @@ class ThreadDownload extends Thread{
                 }
             } else{
                 int timeout_count = estado.timeoutReceived();
-                if(timeout_count == 3){
-                    cpbt.interrupt();
+                if(timeout_count == 3)
                     tfcc.interruptDownload();
-                }
                 agente.sendPDU(syn,addressDest,7777);
             }
         }
