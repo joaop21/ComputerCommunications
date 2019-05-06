@@ -34,7 +34,7 @@ public class ConsoleProgressBar implements Runnable{
                 System.out.print("Downloading: " + df.format(percentage) + "% " + animationChars[progress % 4] + "\r");
 		        if(progress == max_segments) break;
 	        } catch(Exception e){
-                e.printStackTrace();
+                // doing nothing
             } finally{
                 l.unlock();
             }
