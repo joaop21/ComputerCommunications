@@ -16,6 +16,7 @@ class ThreadDownload extends Thread{
     Lock l = new ReentrantLock();
     Condition empty  = l.newCondition();
     PDU ultimo_enviado;
+    Thread cpbt;
 
     public ThreadDownload(AgenteUDP agent, String destip, String file_name, TransfereCC tfccn) throws UnknownHostException{
         tfcc = tfccn;
@@ -92,8 +93,10 @@ class ThreadDownload extends Thread{
                 }
             } else{
                 int timeout_count = estado.timeoutReceived();
-                if(timeout_count == 3)
+                if(timeout_count == 3){
+                    cpbt.interrupt();
                     tfcc.interruptDownload();
+                }
                 agente.sendPDU(syn,addressDest,7777);
             }
         }
@@ -124,8 +127,10 @@ class ThreadDownload extends Thread{
                 }
             } else{
                 int timeout_count = estado.timeoutReceived();
-                if(timeout_count == 3)
+                if(timeout_count == 3){
+                    cpbt.interrupt();
                     tfcc.interruptDownload();
+                }
                 agente.sendPDU(ultimo_enviado, addressDest,7777);
             }
         }
@@ -145,8 +150,10 @@ class ThreadDownload extends Thread{
                 }
             } else{
                 int timeout_count = estado.timeoutReceived();
-                if(timeout_count == 3)
+                if(timeout_count == 3){
+                    cpbt.interrupt();
                     tfcc.interruptDownload();
+                }
                 agente.sendPDU(finack,addressDest,7777);
             }
         }
@@ -190,7 +197,8 @@ class ThreadDownload extends Thread{
             beginConnection();
 
             ConsoleProgressBar cpb = new ConsoleProgressBar(segment_num);
-            new Thread(cpb).start();
+            cpbt = new Thread(cpb);
+            cpbt.start();
 
             int segment = 0;
             String file_parts[] = new String[segment_num];
