@@ -12,7 +12,10 @@ public class Estado{
     private int dupAckCount;
     private int ssthresh;
     private float congestionWindow;
-    private int timeout;
+    private long timeout; // milissegundos
+    private long estimatedRTT;
+    private long devRTT;
+    private int timeout_count;
 
     public Estado(){
         this.estado = TransferState.CONNECTING;
@@ -26,7 +29,10 @@ public class Estado{
         this.dupAckCount = 0;
         this.ssthresh = 64;
         this.congestionWindow = 1;
-        this.timeout = 0;
+        this.timeout = 3000;
+        this.estimatedRTT = 3000;
+        this.devRTT = 0;
+        this.timeout_count = 0;
     }
 
     public TransferState getEstado(){return this.estado;}
@@ -45,7 +51,7 @@ public class Estado{
 
     public int getCongestionWindow(){return (int)this.congestionWindow;}
 
-    public int getTimeout(){return this.timeout;}
+    public long getTimeout(){return this.timeout;}
 
 
     public void setNextState(){
@@ -78,6 +84,12 @@ public class Estado{
 
     public void setCongestionWindow(int cw){this.congestionWindow = cw;}
 
+    public void receiveEstimatedRTT(long sampleRTT){
+        this.estimatedRTT = (long) ((1-0.125)*(double)this.estimatedRTT + (0.125*(double)sampleRTT));
+        this.devRTT = (long) ((1-0.25)*this.devRTT + 0.25*Math.abs(sampleRTT - this.estimatedRTT));
+        this.timeout = this.estimatedRTT + 4*this.devRTT;
+    }
+
     /**
         Método que atribui um numero random ao número de sequência.
         TCP funciona da mesma maneira.
@@ -100,6 +112,7 @@ public class Estado{
         Método que controla a congestão quando é recebido um novo Ack
     */
     public void newAckReceived(){
+        this.timeout_count = 0;
         switch(this.cc_phase){
             case SlowStart:
                 this.congestionWindow++;
@@ -122,6 +135,7 @@ public class Estado{
         Método que controla a congestão quando é recebido um Ack Duplicado
     */
     public void duplicatedAckReceived(){
+        this.timeout_count = 0;
         switch(this.cc_phase){
             case SlowStart:
                 this.dupAckCount++;
@@ -148,10 +162,13 @@ public class Estado{
     /**
         Método que controla a congestão quando ocorre um timeout
     */
-    public void timeoutReceived(){
+    public int timeoutReceived(){
+        this.timeout_count++;
         this.ssthresh = ((int)this.congestionWindow)/2;
         this.congestionWindow = 1;
         this.dupAckCount = 0;
+        this.cc_phase = CongestionControlPhase.SlowStart;
+        return timeout_count;
     }
 
 }

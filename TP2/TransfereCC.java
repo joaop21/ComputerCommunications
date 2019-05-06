@@ -121,6 +121,10 @@ public class TransfereCC extends Thread {
         }
     }
 
+    public void interruptDownload(){
+        tfd.interrupt();
+    }
+
     ////////////////////////// RUN //////////////////////////
     public void run(){
         try{
@@ -130,7 +134,7 @@ public class TransfereCC extends Thread {
 
             // It's a Download ...
             if(this.download == true){
-                tfd = new ThreadDownload(agente,destinationIP,filename);
+                tfd = new ThreadDownload(agente,destinationIP,filename,this);
                 new Thread(tfd).run();
 
                 // Interrupts this thread.

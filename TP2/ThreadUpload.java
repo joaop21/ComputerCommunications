@@ -2,6 +2,7 @@ import java.net.*;
 import java.io.*;
 import java.util.LinkedList;
 import java.util.concurrent.locks.*;
+import java.util.concurrent.TimeUnit;
 import java.nio.file.Files;
 import java.util.Map;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ class ThreadUpload extends Thread{
     final Condition finalAck = l.newCondition();
     volatile int window = 1;
     volatile int validados[];
+    volatile Map<Integer,Long> tempo_inicio = new HashMap<>();
     int pdu_number = 0;
 
 
@@ -50,8 +52,12 @@ class ThreadUpload extends Thread{
         l.lock();
         PDU p;
         try{
-            while(received.size() == 0)
-                empty.await();
+            while(received.size() == 0){
+                empty.await(estado.getTimeout(),TimeUnit.MILLISECONDS);
+                // deu timeout
+                if(received.size() == 0)
+                    return null;
+            }
 
             p = received.removeFirst();
             return p;
@@ -63,6 +69,17 @@ class ThreadUpload extends Thread{
         return null;
     }
 
+    /**
+        Método que dá signal às thread paradas na variavel de condição finalAck.
+        Se uma thread está parada nesta variável de condição é porque acabou de enviar
+      o ficheiro.
+    */
+    public void signalFinalAck(){
+        l.lock();
+        finalAck.signal();
+        l.unlock();
+    }
+
     /*
         Método que define o início de uma conexão
     */
@@ -70,13 +87,19 @@ class ThreadUpload extends Thread{
         // Recebe SYN
         while(true){
             PDU syn = nextPDU();
-            if(syn.getSYN() == true){
-                // inicia com um nº se sequencia random
-                estado.setInitialRandomSequenceNumber();
-                // sequence recebido é o numero de ack a enviar no pdu seguinte
-                estado.setAckNumber(syn.getSequenceNumber()+1);
-                estado.setReceiveWindow(syn.getReceiveWindow());
-                break;
+            if(syn != null){
+                if(syn.getSYN() == true){
+                    // inicia com um nº se sequencia random
+                    estado.setInitialRandomSequenceNumber();
+                    // sequence recebido é o numero de ack a enviar no pdu seguinte
+                    estado.setAckNumber(syn.getSequenceNumber()+1);
+                    estado.setReceiveWindow(syn.getReceiveWindow());
+                    break;
+                }
+            } else{
+                int timeout_count = estado.timeoutReceived();
+                if(timeout_count == 3)
+                    tfcc.removeConnection(addressDest);
             }
         }
 
@@ -85,25 +108,30 @@ class ThreadUpload extends Thread{
         synack.incrementSequenceNumber(estado.getSequenceNumber());
         synack.setAckNumber(estado.getAckNumber());
         agente.sendPDU(synack,addressDest,7777);
-        pdu_number++;
+
+        long start = System.currentTimeMillis();
 
         // recebe ACK
         while(true){
             PDU ack = nextPDU();
-            if(ack.getACK() == true){
-                estado.setAckNumber(ack.getSequenceNumber()+1);
-                break;
+            if(ack != null){
+                if(ack.getACK() == true){
+                    estado.setAckNumber(ack.getSequenceNumber()+1);
+                    break;
+                }
+            } else{
+                int timeout_count = estado.timeoutReceived();
+                if(timeout_count == 3)
+                    tfcc.removeConnection(addressDest);
+                agente.sendPDU(synack,addressDest,7777);
             }
         }
 
+        long rtt = System.currentTimeMillis() - start;
+        estado.receiveEstimatedRTT(rtt);
+
+        pdu_number++;
         estado.setNextState();
-    }
-
-
-    public void signalFinalAck(){
-        l.lock();
-        finalAck.signal();
-        l.unlock();
     }
 
     /*
@@ -125,6 +153,8 @@ class ThreadUpload extends Thread{
                 agente.sendPDU(packet,addressDest,7777);
                 pdu_number++;
                 window--;
+                long start = System.currentTimeMillis();
+                tempo_inicio.put(pdu_number-1,start);
             }
 
             try{
@@ -155,10 +185,17 @@ class ThreadUpload extends Thread{
         // recebe FINACK
         while(true){
             PDU finack = nextPDU();
-            if(finack.getFIN() == true && finack.getACK() == true){
-                estado.setSequenceNumber(finack.getAckNumber());
-                estado.setAckNumber(finack.getSequenceNumber()+1);
-                break;
+            if(finack != null){
+                if(finack.getFIN() == true && finack.getACK() == true){
+                    estado.setSequenceNumber(finack.getAckNumber());
+                    estado.setAckNumber(finack.getSequenceNumber()+1);
+                    break;
+                }
+            } else{
+                int timeout_count = estado.timeoutReceived();
+                if(timeout_count == 3)
+                    tfcc.removeConnection(addressDest);
+                agente.sendPDU(fin,addressDest,7777);
             }
         }
 
