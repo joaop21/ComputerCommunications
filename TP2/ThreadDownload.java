@@ -74,7 +74,7 @@ class ThreadDownload extends Thread{
         espera um SYNACK
         e envia um ACK
     */
-    void beginConnection(){
+    public int beginConnection(){
         // envia SYN
         estado.setInitialRandomSequenceNumber();
         estado.setReceiveWindow(55);
@@ -93,8 +93,10 @@ class ThreadDownload extends Thread{
                 }
             } else{
                 int timeout_count = estado.timeoutReceived();
-                if(timeout_count == 3)
+                if(timeout_count == 3){
                     tfcc.interruptDownload();
+                    return -1;
+                }
                 agente.sendPDU(syn,addressDest,7777);
             }
         }
@@ -107,12 +109,13 @@ class ThreadDownload extends Thread{
         estado.setFirstDataSequenceNumber(estado.getSequenceNumber());
         estado.setFirstDataAckNumber(estado.getAckNumber());
         estado.setNextState();
+        return 0;
     }
 
     /*
         Método que define o fim de uma conexão
     */
-    void endConnection(PDU ultimo_enviado){
+    public int endConnection(PDU ultimo_enviado){
 
         // Recebe FIN
         while(true){
@@ -128,6 +131,7 @@ class ThreadDownload extends Thread{
                 if(timeout_count == 3){
                     cpbt.interrupt();
                     tfcc.interruptDownload();
+                    return -1;
                 }
                 agente.sendPDU(ultimo_enviado, addressDest,7777);
             }
@@ -151,11 +155,13 @@ class ThreadDownload extends Thread{
                 if(timeout_count == 3){
                     cpbt.interrupt();
                     tfcc.interruptDownload();
+                    return -1;
                 }
                 agente.sendPDU(finack,addressDest,7777);
             }
         }
         estado.setNextState();
+        return 0;
     }
 
     /*
@@ -192,7 +198,8 @@ class ThreadDownload extends Thread{
     */
     public void run(){
         try{
-            beginConnection();
+            int res = beginConnection();
+            if(res == -1) return;
 
             ConsoleProgressBar cpb = new ConsoleProgressBar(segment_num);
             cpbt = new Thread(cpb);
@@ -234,13 +241,19 @@ class ThreadDownload extends Thread{
                         agente.sendPDU(pdu,addressDest,7777);
                     }
                 } else{
-                    estado.getTimeout();
+                    int timeout_count = estado.timeoutReceived();
+                    if(timeout_count == 3){
+                        cpbt.interrupt();
+                        tfcc.interruptDownload();
+                        return;
+                    }
                     agente.sendPDU(ultimo_enviado,addressDest,7777);
                 }
 
             }
 
-            endConnection(ultimo_enviado);
+            res = endConnection(ultimo_enviado);
+            if(res == -1) return;
 
             createFile(file_parts);
 
