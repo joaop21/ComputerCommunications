@@ -2,11 +2,9 @@ import java.net.*;
 import java.io.*;
 import java.util.LinkedList;
 import java.util.concurrent.locks.*;
-import java.util.concurrent.TimeUnit;
 import java.util.Arrays;
 
 class ThreadDownload extends Thread{
-    TransfereCC tfcc;
     AgenteUDP agente;
     Estado estado;
     InetAddress addressDest;
@@ -15,10 +13,8 @@ class ThreadDownload extends Thread{
     int segment_num;
     Lock l = new ReentrantLock();
     Condition empty  = l.newCondition();
-    PDU ultimo_enviado;
 
-    public ThreadDownload(AgenteUDP agent, String destip, String file_name, TransfereCC tfccn) throws UnknownHostException{
-        tfcc = tfccn;
+    public ThreadDownload(AgenteUDP agent, String destip, String file_name) throws UnknownHostException{
         agente = agent;
         estado = new Estado();
         // Determines the IP address of a host, given the host's name.
@@ -50,12 +46,8 @@ class ThreadDownload extends Thread{
         l.lock();
         PDU p;
         try{
-            while(received.size() == 0){
-                empty.await(estado.getTimeout(),TimeUnit.MILLISECONDS);
-                // deu timeout
-                if(received.size() == 0)
-                    return null;
-            }
+            while(received.size() == 0)
+                empty.await();
 
             p = received.removeFirst();
             return p;
@@ -84,23 +76,15 @@ class ThreadDownload extends Thread{
         // recebe SYNACK
         while(true){
             PDU synack = nextPDU();
-            if(synack != null){
-                if(synack.getSYN() == true && synack.getACK() == true){
-                    segment_num = Integer.valueOf(synack.getOptions());
-                    estado.setAckNumber(synack.getSequenceNumber()+1);
-                    break;
-                }
-            } else{
-                int timeout_count = estado.timeoutReceived();
-                if(timeout_count == 3)
-                    tfcc.interruptDownload();
-                agente.sendPDU(syn,addressDest,7777);
+            if(synack.getSYN() == true && synack.getACK() == true){
+                segment_num = Integer.valueOf(synack.getOptions());
+                estado.setAckNumber(synack.getSequenceNumber()+1);
+                break;
             }
         }
 
         // envia ACK
         PDU ack = new PDU(estado.getSequenceNumber(), estado.getAckNumber(), new String(), false, false, true, false, new byte[0]);
-        ultimo_enviado = ack;
         agente.sendPDU(ack,addressDest,7777);
 
         estado.setFirstDataSequenceNumber(estado.getSequenceNumber());
@@ -111,22 +95,15 @@ class ThreadDownload extends Thread{
     /*
         Método que define o fim de uma conexão
     */
-    void endConnection(PDU ultimo_enviado){
+    void endConnection(){
 
         // Recebe FIN
         while(true){
             PDU fin = nextPDU();
-            if(fin != null){
-                if(fin.getFIN() == true){
-                    estado.setSequenceNumber(fin.getAckNumber());
-                    estado.setAckNumber(fin.getSequenceNumber()+1);
-                    break;
-                }
-            } else{
-                int timeout_count = estado.timeoutReceived();
-                if(timeout_count == 3)
-                    tfcc.interruptDownload();
-                agente.sendPDU(ultimo_enviado, addressDest,7777);
+            if(fin.getFIN() == true){
+                estado.setSequenceNumber(fin.getAckNumber());
+                estado.setAckNumber(fin.getSequenceNumber()+1);
+                break;
             }
         }
 
@@ -137,17 +114,10 @@ class ThreadDownload extends Thread{
         // recebe ACK
         while(true){
             PDU ack = nextPDU();
-            if(ack != null){
-                if(ack.getACK() == true){
-                    estado.setSequenceNumber(ack.getAckNumber());
-                    estado.setAckNumber(ack.getSequenceNumber()+1);
-                    break;
-                }
-            } else{
-                int timeout_count = estado.timeoutReceived();
-                if(timeout_count == 3)
-                    tfcc.interruptDownload();
-                agente.sendPDU(finack,addressDest,7777);
+            if(ack.getACK() == true){
+                estado.setSequenceNumber(ack.getAckNumber());
+                estado.setAckNumber(ack.getSequenceNumber()+1);
+                break;
             }
         }
         estado.setNextState();
@@ -200,41 +170,34 @@ class ThreadDownload extends Thread{
             int retry = 0;
             while(segment < segment_num){
                 PDU np = nextPDU();
-                if(np != null){
-                    int seq_number = (np.getSequenceNumber() - first_data_ack_number)/1024;
+                int seq_number = (np.getSequenceNumber() - first_data_ack_number)/1024;
 
-                    String data = new String(np.getData());
-                    file_parts[seq_number] = data;
+                String data = new String(np.getData());
+                file_parts[seq_number] = data;
 
-                    if(seq_number > segment){
-                        retry++;
-                        if(retry < 3){
-                            System.out.println("Falta-me o " + seq_number);
-                            PDU retransmit = new PDU(estado.getSequenceNumber(),first_data_ack_number + (segment * 1024), new String(), false, false, true, false, new byte[0]);
-                            ultimo_enviado = retransmit;
-                            agente.sendPDU(retransmit,addressDest,7777);
-                        }
-                    } else{
-                        retry = 0;
-                        while(segment < segment_num){
-                            if(file_parts[segment] == "") break;
-                            segment++;
-                            cpb.incrementProgress();
-                            estado.incrementSequenceNumber(1);
-                        }
-                        estado.setAckNumber(first_data_ack_number + segment*1024);
-                        PDU pdu = new PDU(estado.getSequenceNumber(),estado.getAckNumber(), new String(), false, false, true, false, new byte[0]);
-                        ultimo_enviado = pdu;
-                        agente.sendPDU(pdu,addressDest,7777);
+                if(seq_number > segment){
+                    retry++;
+                    if(retry < 3){
+                        System.out.println("Falta-me o " + seq_number);
+                        PDU retransmit = new PDU(estado.getSequenceNumber(),first_data_ack_number + (segment * 1024), new String(), false, false, true, false, new byte[0]);
+                        agente.sendPDU(retransmit,addressDest,7777);
                     }
                 } else{
-                    estado.getTimeout();
-                    agente.sendPDU(ultimo_enviado,addressDest,7777);
+                    retry = 0;
+                    while(segment < segment_num){
+                        if(file_parts[segment] == "") break;
+                        segment++;
+                        cpb.incrementProgress();
+                        estado.incrementSequenceNumber(1);
+                    }
+                    estado.setAckNumber(first_data_ack_number + segment*1024);
+                    PDU pdu = new PDU(estado.getSequenceNumber(),estado.getAckNumber(), new String(), false, false, true, false, new byte[0]);
+                    agente.sendPDU(pdu,addressDest,7777);
                 }
 
             }
 
-            endConnection(ultimo_enviado);
+            endConnection();
 
             createFile(file_parts);
 
