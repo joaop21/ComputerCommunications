@@ -82,7 +82,7 @@ class ThreadUpload extends Thread{
     /*
         Método que define o início de uma conexão
     */
-    void beginConnection(){
+    public int beginConnection(){
         // Recebe SYN
         while(true){
             PDU syn = nextPDU();
@@ -98,7 +98,7 @@ class ThreadUpload extends Thread{
             } else{
                 int timeout_count = estado.timeoutReceived();
                 if(timeout_count == 3)
-                    tfcc.removeConnection(addressDest);
+                    return -1;
             }
         }
 
@@ -120,12 +120,13 @@ class ThreadUpload extends Thread{
             } else{
                 int timeout_count = estado.timeoutReceived();
                 if(timeout_count == 3)
-                    tfcc.removeConnection(addressDest);
+                    return -1;
                 agente.sendPDU(synack,addressDest,7777);
             }
         }
 
         estado.setNextState();
+        return 0;
     }
 
     /*
@@ -169,7 +170,7 @@ class ThreadUpload extends Thread{
     /*
         Método que define o fim de uma conexão
     */
-    void endConnection(){
+    public int endConnection(){
         // envia FIN
         PDU fin = new PDU(estado.getSequenceNumber(), estado.getAckNumber(), new String(), false, true, false, false, new byte[0]);
         agente.sendPDU(fin,addressDest,7777);
@@ -186,7 +187,7 @@ class ThreadUpload extends Thread{
             } else{
                 int timeout_count = estado.timeoutReceived();
                 if(timeout_count == 3)
-                    tfcc.removeConnection(addressDest);
+                    return -1;
                 agente.sendPDU(fin,addressDest,7777);
             }
         }
@@ -194,6 +195,7 @@ class ThreadUpload extends Thread{
         // envia ACK
         PDU ack = new PDU(estado.getSequenceNumber(), estado.getAckNumber(), new String(), false, false, true, false, new byte[0]);
         agente.sendPDU(ack,addressDest,7777);
+        return 0;
     }
 
     /*
@@ -201,11 +203,13 @@ class ThreadUpload extends Thread{
     */
     public void run(){
 
-        beginConnection();
+        int res = beginConnection();
+        if(res == -1) return;
 
         dataTransfer();
 
-        endConnection();
+        res = endConnection();
+        if(res == -1) return;
 
         tfcc.removeConnection(addressDest);
 
