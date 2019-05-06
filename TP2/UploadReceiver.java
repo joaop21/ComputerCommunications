@@ -39,9 +39,6 @@ class UploadReceiver implements Runnable{
 
                         estado.duplicatedAckReceived();
 
-                        if(tup.tempo_inicio.containsKey(index))
-                            tup.tempo_inicio.replace(index, now);
-
                         // retransmits PDU
                         PDU retransmit = tfcc.getPDU(index+1);
                         retransmit.incrementSequenceNumber(estado.getSequenceNumber());
@@ -49,13 +46,6 @@ class UploadReceiver implements Runnable{
                         agente.sendPDU(retransmit,tup.addressDest,7777);
 
                     } else{
-
-                        Long time = tup.tempo_inicio.get(index-1);
-                        if(time != null){
-                            estado.receiveEstimatedRTT(now-time);
-                            tup.tempo_inicio.remove(index-1);
-                        }
-
                         tup.validados[index] = 1; // one ack received
 
                         // validate the smaller PDUs
@@ -68,7 +58,6 @@ class UploadReceiver implements Runnable{
                             } else{
                                 if(tup.validados[index] == 5) break;
                             }
-
 
                             tup.validados[index] = 5;
                         }

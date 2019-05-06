@@ -19,7 +19,6 @@ class ThreadUpload extends Thread{
     final Condition finalAck = l.newCondition();
     volatile int window = 1;
     volatile int validados[];
-    volatile Map<Integer,Long> tempo_inicio = new HashMap<>();
     int pdu_number = 0;
 
 
@@ -108,8 +107,7 @@ class ThreadUpload extends Thread{
         synack.incrementSequenceNumber(estado.getSequenceNumber());
         synack.setAckNumber(estado.getAckNumber());
         agente.sendPDU(synack,addressDest,7777);
-
-        long start = System.currentTimeMillis();
+        pdu_number++;
 
         // recebe ACK
         while(true){
@@ -127,10 +125,6 @@ class ThreadUpload extends Thread{
             }
         }
 
-        long rtt = System.currentTimeMillis() - start;
-        estado.receiveEstimatedRTT(rtt);
-
-        pdu_number++;
         estado.setNextState();
     }
 
@@ -153,8 +147,6 @@ class ThreadUpload extends Thread{
                 agente.sendPDU(packet,addressDest,7777);
                 pdu_number++;
                 window--;
-                long start = System.currentTimeMillis();
-                tempo_inicio.put(pdu_number-1,start);
             }
 
             try{
