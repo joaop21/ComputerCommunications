@@ -68,6 +68,15 @@ class ThreadDownload extends Thread{
         return null;
     }
 
+
+    public void messageTimeout(){
+        System.out.println("Servers cannot be reached ...");
+    }
+
+    public void messageLosedConnection(){
+        System.out.println("Connection lost ...");
+    }
+
     /*
         Método que define o início de uma conexão
         Como é o lado do cliente este é quem envia um SYN,
@@ -95,6 +104,7 @@ class ThreadDownload extends Thread{
                 int timeout_count = estado.timeoutReceived();
                 if(timeout_count == 3){
                     tfcc.interruptDownload();
+                    messageTimeout();
                     return -1;
                 }
                 agente.sendPDU(syn,addressDest,7777);
@@ -131,6 +141,7 @@ class ThreadDownload extends Thread{
                 if(timeout_count == 3){
                     cpbt.interrupt();
                     tfcc.interruptDownload();
+                    messageTimeout();
                     return -1;
                 }
                 agente.sendPDU(ultimo_enviado, addressDest,7777);
@@ -155,6 +166,7 @@ class ThreadDownload extends Thread{
                 if(timeout_count == 3){
                     cpbt.interrupt();
                     tfcc.interruptDownload();
+                    messageTimeout();
                     return -1;
                 }
                 agente.sendPDU(finack,addressDest,7777);
@@ -245,6 +257,7 @@ class ThreadDownload extends Thread{
                     if(timeout_count == 3){
                         cpbt.interrupt();
                         tfcc.interruptDownload();
+                        messageLosedConnection();
                         return;
                     }
                     agente.sendPDU(ultimo_enviado,addressDest,7777);
