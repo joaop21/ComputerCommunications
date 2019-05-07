@@ -180,7 +180,7 @@ class ThreadDownload extends Thread{
     /*
         Método que cria ficheiro
     */
-    public void createFile(InputStream parts[]){
+    public void createFile(byte[] parts[]){
         try{
             // Creates a new File instance by converting the given pathname string into an abstract pathname.
             File file = new File(filename);
@@ -192,16 +192,20 @@ class ThreadDownload extends Thread{
                 System.out.println("File already exists. Information will be truncated.");
             }
 
-            try (FileOutputStream fos = new FileOutputStream(file);
-                 BufferedOutputStream mergingStream = new BufferedOutputStream(fos)) {
-                    for (InputStream is : parts) {
-                        int bytesRead = 0;
-                        byte[] buffer = new byte[1024];
-                        while ((bytesRead = is.read(buffer)) != -1) {
-                            mergingStream.write(buffer, 0, bytesRead);
-                        }
-                    }
+            int tam = 0;
+            for(int i = 0 ; i < parts.length ; i++)
+                tam += parts[i].length;
+
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            for(int i = 0 ; i < parts.length ; i++)
+                output.write(parts[i]);
+            byte[] out = output.toByteArray();
+
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                fos.write(out);
             }
+
+
         } catch(Exception e){
             e.printStackTrace();
         }
@@ -220,7 +224,7 @@ class ThreadDownload extends Thread{
             cpbt.start();
 
             int segment = 0;
-            InputStream file_parts[] = new InputStream[segment_num];
+            byte[] file_parts[] = new byte[segment_num][1024];
             Arrays.fill(file_parts, null);
             int first_data_ack_number = estado.getFirstDataAckNumber();
 
@@ -231,7 +235,7 @@ class ThreadDownload extends Thread{
                     int seq_number = (np.getSequenceNumber() - first_data_ack_number)/1024;
 
                     //String data = new String(np.getData());
-                    file_parts[seq_number] = new ByteArrayInputStream(np.getData());
+                    file_parts[seq_number] = np.getData();
 
                     if(seq_number > segment){
                         retry++;
