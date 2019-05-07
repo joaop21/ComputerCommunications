@@ -85,6 +85,7 @@ class ThreadDownload extends Thread{
         e envia um ACK
     */
     public int beginConnection(){
+        long start = System.currentTimeMillis();
         // envia SYN
         estado.setInitialRandomSequenceNumber();
         estado.setReceiveWindow(55);
@@ -111,6 +112,9 @@ class ThreadDownload extends Thread{
                 agente.sendPDU(syn,addressDest,7777);
             }
         }
+
+        long rtt = System.currentTimeMillis() - start;
+        estado.receiveEstimatedRTT(rtt);
 
         // envia ACK
         PDU ack = new PDU(estado.getSequenceNumber(), estado.getAckNumber(), new String(), false, false, true, false, new byte[0]);

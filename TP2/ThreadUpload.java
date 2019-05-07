@@ -102,6 +102,7 @@ class ThreadUpload extends Thread{
             }
         }
 
+        long start = System.currentTimeMillis();
         // envia SYNACK
         PDU synack = tfcc.getPDU(pdu_number);
         synack.incrementSequenceNumber(estado.getSequenceNumber());
@@ -124,6 +125,9 @@ class ThreadUpload extends Thread{
                 agente.sendPDU(synack,addressDest,7777);
             }
         }
+
+        long rtt = System.currentTimeMillis() - start;
+        estado.receiveEstimatedRTT(rtt);
 
         estado.setNextState();
         return 0;

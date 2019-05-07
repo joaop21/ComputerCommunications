@@ -31,7 +31,7 @@ public class Estado{
         this.congestionWindow = 1;
         this.timeout = 3000;
         this.estimatedRTT = 3000;
-        this.devRTT = 0;
+        this.devRTT = 5;
         this.timeout_count = 0;
     }
 
