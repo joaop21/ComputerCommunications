@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.locks.*;
 
 public class TransfereCC extends Thread {
@@ -29,7 +30,7 @@ public class TransfereCC extends Thread {
         download = false;
         fich = f;
         filename = f.getName();
-        Map<Integer,String> segmented_file = divideFile(fich);
+        Map<Integer,byte[]> segmented_file = divideFile(fich);
         segmentsToSend = generateAllPDUs(segmented_file);
         destinationIP = "";
     }
@@ -159,53 +160,28 @@ public class TransfereCC extends Thread {
     /*
         Divide o ficheiro consoante o MSS e coloca-o num MAP<>
     */
-    public Map<Integer,String> divideFile(File file){
-        try{
-            FileInputStream fis = new FileInputStream(file);
-            InputStreamReader isr = new InputStreamReader(fis);
+    public Map<Integer,byte[]> divideFile(File f) throws IOException {
+        byte[] buffer = new byte[this.MSS];
+        Map<Integer,byte[]> file_map = new HashMap<>();
 
-            long file_length = file.length();
-            char[] file_char = new char[(int)file_length];
+        try (FileInputStream fis = new FileInputStream(f);
+             BufferedInputStream bis = new BufferedInputStream(fis)) {
 
-            isr.read(file_char, 0, (int)file_length);
-
-            char[] lidos;
-            if(file_length < this.MSS)
-                lidos = new char[(int) file_length];
-            else lidos = new char[this.MSS];
-
-            lidos[0] = file_char[0];
-            int seq = 0;
-            Map<Integer,String> file_map = new HashMap<>();
-            for(int i = 1; i < file_length ; i++){
-                if(i%this.MSS != 0){
-                    lidos[i%this.MSS] = file_char[i];
-                }else{
-                    String data = new String(lidos);
-                    file_map.put(seq,data);
-                    seq+=this.MSS;
-
-                    if(file_length-i < this.MSS)
-                        lidos = new char[(int) file_length-i];
-                    else lidos = new char[this.MSS];
-
-                    lidos[0] = file_char[i];
-                }
+            int bytesAmount = 0;
+            int segment = 0;
+            while ((bytesAmount = bis.read(buffer)) > 0) {
+                byte[] chunk = Arrays.copyOf(buffer,bytesAmount);
+                file_map.put(segment,chunk);
+                segment += 1024;
             }
-            String data = new String(lidos);
-            file_map.put(seq,data);
-
-            return file_map;
-        } catch(Exception e){
-            e.printStackTrace();
         }
-        return null;
+        return file_map;
     }
 
     /*
         Gera todos os PDUs a enviar
     */
-    public List<PDU> generateAllPDUs(Map<Integer,String> chunks){
+    public List<PDU> generateAllPDUs(Map<Integer,byte[]> chunks){
         List<PDU> res = new ArrayList<>();
         int chunks_number = chunks.size();
 
@@ -216,8 +192,8 @@ public class TransfereCC extends Thread {
         // data to transfer
         int segment = 0;
         for(; (segment/1024) < chunks_number ; segment += 1024){
-            String data = chunks.get(segment);
-            PDU dataPDU = new PDU(segment+1,0,new String(),false,false,false,true,data.getBytes());
+            byte[] data = chunks.get(segment);
+            PDU dataPDU = new PDU(segment+1,0,new String(),false,false,false,true,data);
             res.add(dataPDU);
         }
 

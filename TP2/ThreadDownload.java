@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.concurrent.locks.*;
 import java.util.concurrent.TimeUnit;
 import java.util.Arrays;
+import java.nio.file.Files;
 
 class ThreadDownload extends Thread{
     TransfereCC tfcc;
@@ -179,7 +180,7 @@ class ThreadDownload extends Thread{
     /*
         Método que cria ficheiro
     */
-    public void createFile(String[] parts){
+    public void createFile(InputStream parts[]){
         try{
             // Creates a new File instance by converting the given pathname string into an abstract pathname.
             File file = new File(filename);
@@ -191,15 +192,16 @@ class ThreadDownload extends Thread{
                 System.out.println("File already exists. Information will be truncated.");
             }
 
-            // Write Content: Constructs a FileWriter object given a File object.
-            FileWriter writer = new FileWriter(file);
-
-            //int tam = parts.length;
-            for(int i = 0 ; i < segment_num ; i++)
-                writer.write(parts[i]);
-
-            // Closes the stream, flushing it first.
-            writer.close();
+            try (FileOutputStream fos = new FileOutputStream(file);
+                 BufferedOutputStream mergingStream = new BufferedOutputStream(fos)) {
+                    for (InputStream is : parts) {
+                        int bytesRead = 0;
+                        byte[] buffer = new byte[1024];
+                        while ((bytesRead = is.read(buffer)) != -1) {
+                            mergingStream.write(buffer, 0, bytesRead);
+                        }
+                    }
+            }
         } catch(Exception e){
             e.printStackTrace();
         }
@@ -218,8 +220,8 @@ class ThreadDownload extends Thread{
             cpbt.start();
 
             int segment = 0;
-            String file_parts[] = new String[segment_num];
-            Arrays.fill(file_parts, "");
+            InputStream file_parts[] = new InputStream[segment_num];
+            Arrays.fill(file_parts, null);
             int first_data_ack_number = estado.getFirstDataAckNumber();
 
             int retry = 0;
@@ -228,8 +230,8 @@ class ThreadDownload extends Thread{
                 if(np != null){
                     int seq_number = (np.getSequenceNumber() - first_data_ack_number)/1024;
 
-                    String data = new String(np.getData());
-                    file_parts[seq_number] = data;
+                    //String data = new String(np.getData());
+                    file_parts[seq_number] = new ByteArrayInputStream(np.getData());
 
                     if(seq_number > segment){
                         retry++;
@@ -242,7 +244,7 @@ class ThreadDownload extends Thread{
                     } else{
                         retry = 0;
                         while(segment < segment_num){
-                            if(file_parts[segment] == "") break;
+                            if(file_parts[segment] == null) break;
                             segment++;
                             cpb.incrementProgress();
                             estado.incrementSequenceNumber(1);
