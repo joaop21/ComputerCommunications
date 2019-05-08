@@ -204,7 +204,7 @@ class ThreadDownload extends Thread{
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             for(int i = 0 ; i < parts.length ; i++)
                 output.write(parts[i]);
-            byte[] out = output.toByteArray();
+                byte[] out = output.toByteArray();
 
             try (FileOutputStream fouts = (new FileOutputStream(filesigned))) {
                 fouts.write(out);

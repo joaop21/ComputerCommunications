@@ -178,7 +178,6 @@ public class TransfereCC extends Thread {
                 file_map.put(segment,chunk);
                 segment += 1024;
             }
-            System.out.println(segment);
         }
         return file_map;
     }
