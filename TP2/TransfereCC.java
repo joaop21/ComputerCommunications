@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.locks.*;
+import java.security.InvalidKeyException;
 
 public class TransfereCC extends Thread {
     AgenteUDP agente;
@@ -160,16 +161,19 @@ public class TransfereCC extends Thread {
     /*
         Divide o ficheiro consoante o MSS e coloca-o num MAP<>
     */
-    public Map<Integer,byte[]> divideFile(File f) throws IOException {
+    public Map<Integer,byte[]> divideFile(File f) throws Exception {
         byte[] buffer = new byte[this.MSS];
         Map<Integer,byte[]> file_map = new HashMap<>();
 
-        try (FileInputStream fis = new FileInputStream(f);
-             BufferedInputStream bis = new BufferedInputStream(fis)) {
+        SignFile.generatesignedFile(f,"MyData/" + f.getName());
+
+
+        try (FileInputStream fis = new FileInputStream("MyData/" + f.getName());
+             ObjectInputStream ois = new ObjectInputStream(fis)) {
 
             int bytesAmount = 0;
             int segment = 0;
-            while ((bytesAmount = bis.read(buffer)) > 0) {
+            while ((bytesAmount = ois.read(buffer)) > 0) {
                 byte[] chunk = Arrays.copyOf(buffer,bytesAmount);
                 file_map.put(segment,chunk);
                 segment += 1024;
