@@ -206,9 +206,9 @@ class ThreadDownload extends Thread{
                 output.write(parts[i]);
             byte[] out = output.toByteArray();
 
-            try (ObjectOutputStream outputstream = new ObjectOutputStream(new FileOutputStream(filesigned))) {
-                outputstream.write(out);
-        		outputstream.close();
+            try (FileOutputStream fouts = (new FileOutputStream(filesigned))) {
+                fouts.write(out);
+        		fouts.close();
             }
 
             out = VerifyFile.signatureValidation(filesigned);
