@@ -169,15 +169,16 @@ public class TransfereCC extends Thread {
 
 
         try (FileInputStream fis = new FileInputStream("MyData/" + f.getName());
-             ObjectInputStream ois = new ObjectInputStream(fis)) {
+             BufferedInputStream bis = new BufferedInputStream(fis)) {
 
             int bytesAmount = 0;
             int segment = 0;
-            while ((bytesAmount = ois.read(buffer)) > 0) {
+            while ((bytesAmount = bis.read(buffer)) > 0) {
                 byte[] chunk = Arrays.copyOf(buffer,bytesAmount);
                 file_map.put(segment,chunk);
                 segment += 1024;
             }
+            System.out.println(segment);
         }
         return file_map;
     }

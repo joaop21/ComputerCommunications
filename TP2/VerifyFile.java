@@ -46,7 +46,7 @@ public class VerifyFile {
 	}
 
 	public static byte[] signatureValidation(File signedfile) throws Exception{
-		VerifyFile vf = new VerifyFile(signedfile, "MyKeys/publicKey");
+		VerifyFile vf = new VerifyFile(signedfile, "KeyPair/publicKey");
         if(vf.getResult())
             return vf.getFile();
 
