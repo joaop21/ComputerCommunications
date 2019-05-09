@@ -110,13 +110,39 @@ Por último, o campo \textbf{checksum} leva um inteiro (long), relativo ao cálc
 
 \section{Implementação}
 
-\subsection{Estruturas de dados}
+Nesta secção optamos por fazer uma abordagem Top-Down da nossa implementação, começando pela interface com o utilizador até à classe responsável por receber e enviar datagramas pelo socket. Utilizamos a linguagem \textbf{Java} para tal tarefa.
 
-\subsection{Métodos}
 
-\subsection{Parâmetros}
+\subsection{Interface}
 
-\subsection{Bibliotecas de suporte usadas}
+A primeira fase da transferência inicia com uma interação com o software criado, tanto por parte de quem disponibiliza o ficheiro para upload (servidor), como por parte de quem tenciona descarregá-lo (cliente). 
+
+Tal interação é especificada no ficheiro \textbf{TransfereCCcmd.java}. Dependendo do que é pretendido fazer invocam-se diferentes comandos, exemplificados a seguir.
+
+\begin{verbatim}
+	>  java TransfereCCcmd -put Teste.txt
+\end{verbatim}
+
+Neste caso quem invoca o comando está a disponibilizar o ficheiro \textit{Teste.txt} para possível upload por parte de vários clientes. O utilizador terá de terminar o processo quando desejar uma vez que funciona como servidor para vários clientes e não se cinge só a uma transferência.
+
+\begin{verbatim}
+	>  java TransfereCCcmd -get Saida1.txt 10.1.1.1
+\end{verbatim}
+
+Neste caso quem invoca o comando tenciona fazer download do ficheiro que está (ou não) a ser disponibilizado por \textbf{10.1.1.1}. O ficheiro que será descarregado terá o nome \textit{Saida1.txt}.
+
+\begin{verbatim}
+	>  java TransfereCCcmd -help
+\end{verbatim}
+
+Neste caso o utilizador consulta a forma de utilização do software.
+
+
+\subsection{Gestor de Transferências}
+
+Dependendo de como o utilizador se identifica na interface (Upload ou Download) é criada uma Thread correspondente à classe \textbf{TransfereCC} que atua de diferente forma caso esteja a ser feito um Upload ou um Download. Em ambos os casos a primeira coisa a ser feita pelo \textbf{TransfereCC} é a criação duma Thread correspondente à classe \textbf{AgenteUDP}.
+
+
 
 
 
