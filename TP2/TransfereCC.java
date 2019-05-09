@@ -165,10 +165,10 @@ public class TransfereCC extends Thread {
         byte[] buffer = new byte[this.MSS];
         Map<Integer,byte[]> file_map = new HashMap<>();
 
-        //SignFile.generatesignedFile(f,"MyData/" + f.getName());
+        SignFile.generatesignedFile(f,"MyData/" + f.getName());
 
 
-        try (FileInputStream fis = new FileInputStream(f/**"MyData/" + f.getName()*/);
+        try (FileInputStream fis = new FileInputStream("MyData/" + f.getName());
              BufferedInputStream bis = new BufferedInputStream(fis)) {
 
             int bytesAmount = 0;
