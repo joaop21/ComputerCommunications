@@ -188,7 +188,7 @@ class ThreadDownload extends Thread{
         try{
             // Creates a new File instance by converting the given pathname string into an abstract pathname.
             File file = new File(filename);
-            File filesigned = new File("MyData/" + filename);
+            //File filesigned = new File("MyData/" + filename);
 
             // Atomically creates a new, empty file named by this abstract pathname if and only if a file with this name does not yet exist.
             if (file.createNewFile()){
@@ -205,13 +205,13 @@ class ThreadDownload extends Thread{
             for(int i = 0 ; i < parts.length ; i++)
                 output.write(parts[i]);
                 byte[] out = output.toByteArray();
-
+                /**
             try (FileOutputStream fouts = (new FileOutputStream(filesigned))) {
                 fouts.write(out);
         		fouts.close();
             }
 
-            out = VerifyFile.signatureValidation(filesigned);
+            out = VerifyFile.signatureValidation(filesigned);*/
 
             try (FileOutputStream fos = new FileOutputStream(file)) {
                 fos.write(out);
