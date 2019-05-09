@@ -15,6 +15,20 @@
 \usepackage{fancyvrb}
 \usepackage{amsmath}
 \usepackage{array}
+\usepackage{courier} %% Sets font for listing as Courier.
+\usepackage{listings, xcolor}
+\lstset{
+tabsize = 4, %% Sets tab space width.
+showstringspaces = false, %% Prevents space marking in strings, string is defined as the text that is generally printed directly to the console.
+numbers = left, %% Displays line numbers on the left.
+commentstyle = \color{green}, %% Sets comment color.
+keywordstyle = \color{blue}, %% Sets  keyword color.
+stringstyle = \color{red}, %% Sets  string color.
+rulecolor = \color{black}, %% Sets frame color to avoid being affected by text color.
+basicstyle = \small \ttfamily , %% Sets listing font and size.
+breaklines = true, %% Enables line breaking.
+numberstyle = \tiny,
+}
 %\renewcommand{\baselinestretch}{1.5}
 
 
@@ -41,13 +55,56 @@ PL2, Grupo 6
 
 \section{Introdução}
 
+////////////////////////////////////// FALTA FAZER //////////////////////////////////////
+
 
 
 \section{Especificação do protocolo}
 
+
+
+
 \subsection{Formato das mensagens protolocares (PDU)}
 
+O formato escolhido engloba aspetos que segmentos UDP por norma não incluem. Escolhemos tal abordagem para conseguir implementar uma comunicação fiável por cima dum transporte UDP. O formato escolhido é apresentado abaixo.
+
+\begin{lstlisting}[language = Java , frame = trBL , firstnumber = last , escapeinside={(*@}{@*)}]
+	private int sequence_number;
+	private int ack_number;
+	private String options;
+	private boolean syn;
+	private boolean fin;
+	private boolean ack;
+	private boolean psh;
+	private int receiveWindow;
+	private long checksum;
+	private byte[] data;
+\end{lstlisting}
+
+Em cada \textbf{PDU} enviado estes parâmetros vão preenchidos com informação relevante para que se mantenha uma comunicação fiável, e se consiga manter um estado da comunicação. Desta forma asseguramos uma implementação dum protocolo orientado à comunicação tendo por base \textbf{UDP}.
+
+Os campos \textbf{sequence\_number} e \textbf{ack\_number} servem para que se mantenha uma sequência no transferência dum ficheiro, e poder saber sempre se segmentos foram perdidos ou chegaram fora de ordem por exemplo.
+
+Os campos \textbf{syn}, \textbf{fin}, \textbf{ack} e \textbf{psh} servem para identificar que tipo de segmento se trata, tendo em consideração o cabeçalho do \textbf{TCP} que contempla estes campos.
+
+O campo \textbf{options} é usado para que sejam transferidas informações adicionais sobre a transferência dum ficheiro. É usado, por exemplo, no início da conexão para enviar o número de segmentos que o ficheiro contempla.
+
+Usamos o campo \textbf{receiveWindow} para que trocar informação sobre o possível espaço em buffer para receber datagramas. Server para controlar o fluxo da comunicação.
+
+O campo \textbf{data} leva todos os dados a transferir relativos ao ficheiro. Este campo tem no máximo \textbf{1024} bytes (MSS), por forma a otimizar o processo de envio tendo os segmentos relativamente curtos, para que a probabilidade de serem partidos em camadas inferiores seja reduzida.
+
+Por último, o campo \textbf{checksum} leva um inteiro (long), relativo ao cálculo do checksum o do campo \textbf{data}. 
+
+
 \subsection{Interações}
+
+\subsubsection{Início de Conexão}
+
+
+
+\subsubsection{Transferência de Ficheiro}
+
+\subsubsection{Fim de Conexão}
 
 
 
