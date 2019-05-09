@@ -256,6 +256,26 @@ O controlo de congestão
 
 \section{Testes e resultados}
 
+Como forma de testar e mostrar o resultado do nosso serviço criado, mostramos a seguir a transferência dum executável \textbf{/bin/ls}.
+
+Nesta imagem é possível visualizar o Servidor1 a disponibilizar o executável, e o Cliente1 a realizar o download com sucesso.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.4]{myls_cliente1.png}
+\end{center}
+\caption{Transferência dum executável.}
+\end{figure}
+
+Agora, nesta imagem, é possível visualizar o Servidor1 a disponibilizar o executável, e o Alfa a realizar o download com sucesso. É importante referir que a ligação à LAN3, onde se encontra o Alfa, possui problemas na rede ao nível do congestionamento, e dessa forma, é previsível que existam algumas retransmissões. Tal é, de facto, possível reparar na seguinte imagem.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.4]{myls_alfa.png}
+\end{center}
+\caption{Transferência dum executável para um recetor com congestionamento acentuado.}
+\end{figure}
+
 
 
 \section{Conclusões}
