@@ -93,18 +93,22 @@ Usamos o campo \textbf{receiveWindow} para que trocar informação sobre o poss�
 
 O campo \textbf{data} leva todos os dados a transferir relativos ao ficheiro. Este campo tem no máximo \textbf{1024} bytes (MSS), por forma a otimizar o processo de envio tendo os segmentos relativamente curtos, para que a probabilidade de serem partidos em camadas inferiores seja reduzida.
 
-Por último, o campo \textbf{checksum} leva um inteiro (long), relativo ao cálculo do checksum o do campo \textbf{data}. 
+Por último, o campo \textbf{checksum} leva um inteiro (long), relativo ao cálculo do checksum o do campo \textbf{data}.
 
 
 \subsection{Interações}
 
 \subsubsection{Início de Conexão}
 
-
+Para ocorrer uma transferência de dados entre dois end-systems é necessário que exista inicialmente um estabelecimento de conexão. Quem pretende iniciar uma conexão envia um \textbf{sin} para o destino, na esperança de receber um \textbf{sinack} do servidor ao qual se liga. Seguidamente o cliente envia também um \textbf{ack} a confirmar o estabelecimento da conexão. Desta forma, com este processo tornamos a comunicação orientada à conexão, e portanto, mais controlada.
 
 \subsubsection{Transferência de Ficheiro}
 
+Depois de estabelecida a conexão, é realizado o envio dos dados por parte do servidor tendo em conta os parâmetros estabelecidos, como por exemplo a janela de receção de dados e o MSS. Nesta fase existe também muita interação entre os dois end-systems, pois após a tentativa de envio do servidor, o cliente têm que enviar um ack para confirmar a receção dos dados. Existe a possibilidade deste não chegar ao destino devido a congestionamentos na camada de Rede, de tal forma que nesta fase existem também retransmissões, caso necessário.
+
 \subsubsection{Fim de Conexão}
+
+Devido a estarmos perante uma comunicação orientada à conexão, é necessário que, depois da transferência dos dados, esta seja terminada. No nosso modelo tal acontece da seguinte forma: servidor enviar \textbf{fin} para o cliente a sinalizar que terminou a transferência dos dados; cliente responde com \textbf{finack} para sinalizar receção do fin; servidor envia \textbf{ack} para sinalizar que recebeu a confirmação do fecho da conexão do lado do cliente.
 
 
 
@@ -115,7 +119,7 @@ Nesta secção optamos por fazer uma abordagem Top-Down da nossa implementação
 
 \subsection{Interface}
 
-A primeira fase da transferência inicia com uma interação com o software criado, tanto por parte de quem disponibiliza o ficheiro para upload (servidor), como por parte de quem tenciona descarregá-lo (cliente). 
+A primeira fase da transferência inicia com uma interação com o software criado, tanto por parte de quem disponibiliza o ficheiro para upload (servidor), como por parte de quem tenciona descarregá-lo (cliente).
 
 Tal interação é especificada no ficheiro \textbf{TransfereCCcmd.java}. Dependendo do que é pretendido fazer invocam-se diferentes comandos, exemplificados a seguir.
 
