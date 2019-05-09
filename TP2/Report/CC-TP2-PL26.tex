@@ -100,7 +100,7 @@ Por último, o campo \textbf{checksum} leva um inteiro (long), relativo ao cálc
 
 \subsubsection{Início de Conexão}
 
-Para ocorrer uma transferência de dados entre dois end-systems é necessário que exista inicialmente um estabelecimento de conexão. Quem pretende iniciar uma conexão envia um \textbf{sin} para o destino, na esperança de receber um \textbf{sinack} do servidor ao qual se liga. Seguidamente o cliente envia também um \textbf{ack} a confirmar o estabelecimento da conexão. Desta forma, com este processo tornamos a comunicação orientada à conexão, e portanto, mais controlada.
+Para ocorrer uma transferência de dados entre dois end-systems é necessário que exista inicialmente um estabelecimento de conexão. Quem pretende iniciar uma conexão envia um \textbf{syn} para o destino, na esperança de receber um \textbf{synack} do servidor ao qual se liga. Seguidamente o cliente envia também um \textbf{ack} a confirmar o estabelecimento da conexão. Desta forma, com este processo tornamos a comunicação orientada à conexão, e portanto, mais controlada.
 
 \subsubsection{Transferência de Ficheiro}
 
@@ -144,7 +144,15 @@ Neste caso o utilizador consulta a forma de utilização do software.
 
 \subsection{Gestor de Transferências}
 
-Dependendo de como o utilizador se identifica na interface (Upload ou Download) é criada uma Thread correspondente à classe \textbf{TransfereCC} que atua de diferente forma caso esteja a ser feito um Upload ou um Download. Em ambos os casos a primeira coisa a ser feita pelo \textbf{TransfereCC} é a criação duma Thread correspondente à classe \textbf{AgenteUDP}.
+Dependendo de como o utilizador se identifica na interface (Upload ou Download) é criada uma Thread correspondente à classe \textbf{TransfereCC} que atua de diferente forma caso esteja a ser feito um Upload ou um Download. Em ambos os casos a primeira coisa a ser feita pelo \textbf{TransfereCC} é a criação duma Thread correspondente à classe \textbf{AgenteUDP} que reside no ficheiro \textbf{AgenteUDP.java}. Esta classe será abordada numa secção subsequente.
+
+O \textbf{TransfereCC} tem um função que passa por receber datagramas provenientes do \textbf{AgenteUDP}, desserializar bytes recebidos transformando-os num \textbf{PDU}. Testa o \textbf{checksum} do segmento, sendo esta uma fase crucial pois em caso de erro descarta o \textbf{PDU} recebido, em situação afirmativa entrega-lo à Thread responsável pelo \textbf{IP} de origem (caso do Upload).
+
+\subsubsection{Download}
+
+Em caso de Download é criada uma única Thread que irá tratar de todo este processo correspondente à classe \textbf{ThreadDownload} que se encontra no ficheiro \textbf{ThreadDownload.java}.
+
+Em suma esta Thread recebe e confirma todos os PDUs recebidos do servidor atuando com um mecanismo de \textbf{Selective Repeat}.
 
 
 
