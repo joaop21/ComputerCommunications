@@ -283,10 +283,10 @@ class ThreadDownload extends Thread{
 
             }
 
+            createFile(file_parts);
+
             res = endConnection(ultimo_enviado);
             if(res == -1) return;
-
-            createFile(file_parts);
 
             System.out.println("File was correctly Downloaded ...");
         } catch(Exception e){
