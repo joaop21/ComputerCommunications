@@ -31,6 +31,8 @@ numberstyle = \tiny,
 }
 %\renewcommand{\baselinestretch}{1.5}
 
+\setcounter{secnumdepth}{4} % how many sectioning levels to assign numbers to
+\setcounter{tocdepth}{4}
 
 \begin{document}
 \mainmatter
@@ -147,11 +149,64 @@ Dependendo de como o utilizador se identifica na interface (Upload ou Download) 
 
 O \textbf{TransfereCC} tem um função que passa por receber datagramas provenientes do \textbf{AgenteUDP}, desserializar bytes recebidos transformando-os num \textbf{PDU}. Testa o \textbf{checksum} do segmento, sendo esta uma fase crucial pois em caso de erro descarta o \textbf{PDU} recebido, em situação afirmativa entrega-lo à Thread responsável pelo \textbf{IP} de origem (caso do Upload).
 
+
 \subsubsection{Download}
 
 Em caso de Download é criada uma única Thread que irá tratar de todo este processo correspondente à classe \textbf{ThreadDownload} que se encontra no ficheiro \textbf{ThreadDownload.java}.
 
-Em suma esta Thread recebe e confirma todos os PDUs recebidos do servidor atuando com um mecanismo de \textbf{Selective Repeat}.
+Esta Thread tem 3 principais estados que são o início de conexão, a transferência de dados relativos ao ficheiro, e o fim da conexão.
+
+Durante o processo de transferência de dados relativos ao ficheiro esta Thread recebe e confirma todos os PDUs recebidos do servidor atuando com um mecanismo de \textbf{Selective Repeat}. Em caso de receber PDUs com um número de sequência maior do que aquele que estava à espera não envia para trás ACKs negativos mas sim um PDU com o número de sequência igual ao número de sequência que estava à espera, atuando desta forma igual ao \textbf{TCP}. Recebendo o segmento que estava à espera envia um possível \textbf{ACK cumulativo} confirmando todos os segmentos com números de sequência superiores que recebeu enquanto aguardava o segmento perdido/descartado.
+
+Antes de todo este processo de transferência de dados iniciar é inicializada uma Thread correspondente à classe \textbf{ConsoleProgressBar}, que se encontra no ficheiro \textbf{ConsoleProgressBar.java} cuja única função é receber o progresso da transferência por parte da \textbf{ThreadDownload} e imprimir de forma muito elucidativa no ecrã o progresso da transferência dando uma perspetiva ao utilizador se ainda falta muito para a transferência terminar ou não.
+
+No final junta tudo o que recebeu e cria um novo ficheiro com o nome passado como parâmetro inicialmente.
+
+
+\subsubsection{Upload}
+
+Em caso de Upload o processo é um pouco mais complexo que em caso de Download pois vai requerer um maior esforço por parte do \textbf{TransfereCC}, pois vai ter de manter um \textbf{Map} associando um \textbf{IP} à Thread que trata do mesmo e tendo que entregar datagramas a estas Threads.
+
+Quando o \textbf{TransfereCC} recebe um datagrama cujo IP não está mapeado na sua estrutura, trata de criar uma Thread correspondente à classe \textbf{ThreadUpload}, que se encontra no ficheiro \textbf{ThreadUpload.java} e associando-a ao IP correspondente na sua estrutura.
+
+Tal como em caso de Download esta Thread tem 3 principais fases que são o início de conexão, a transferência de dados relativos ao ficheiro, e o fim da conexão.
+
+Quando é feito uma comunicação fiável é necessário que se envie segmentos com os dados necessários para o destinatário mas ao mesmo tempo tem que se ir confirmando se estamos a receber confirmações dos dados enviados. Ora como seria incômodo e provavelmente não real após enviar um segmento esperar a sua confirmação, foi necessário a criação de uma Thread capaz de tratar apenas dos ACKs recebido sendo estes válidos ou duplicados. Tal encontra-se na classe \textbf{UploadReceiver}, no ficheiro \textbf{UploadReceiver.java}.
+
+Em caso de surgirem ACKs duplicados esta nova Thread trata de reenviar de imediato para o destinatário o segmento em falta, continuando o seu processo normal após esta ação.
+
+Enquanto esta Thread recebe segmentos para interpretá-los, a \textbf{ThreadUpload} encontra-se num ciclo de envio ordenado de segmentos, previamente separados pelo \textbf{TransfereCC}.
+
+Após a Thread de receção receber o último segmento dá sinal numa variável de condição que permite avançar para o término de conexão. Após terminar a conexão é dito ao \textbf{TransfereCC} que a conexão acabou e que a Thread relativa àquele IP pode ser removida do Map.
+
+
+\subsection{Estado}
+
+Ligado a cada transferência tanto dum Download como dum Upload está um estado implícito associado a cada Thread. Tal estado corresponde à classe \textbf{Estado}, que se encontra no ficheiro \textbf{Estado.java}.
+
+Este estado alberga todas as burocracias que não devem ser mantidas pelas Threads que tratam da transferência mas sim por uma classe mais especializada neste tipo de dados. O Estado contém:
+
+\begin{lstlisting}[language = Java , frame = trBL , firstnumber = 1 , escapeinside={(*@}{@*)}]
+    private TransferState estado;
+    private int sequence_number;
+    private int first_data_seq_number;
+    private int ack_number;
+    private int first_data_ack_number;
+    private int mss;
+    private int receiveWindow;
+    private CongestionControlPhase cc_phase;
+    private int dupAckCount;
+    private int ssthresh;
+    private float congestionWindow;
+    private long timeout; // milissegundos
+    private long estimatedRTT;
+    private long devRTT;
+    private int timeout_count;
+\end{lstlisting}
+
+
+\subsection{AgenteUDP}
+
 
 
 
