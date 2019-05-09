@@ -239,6 +239,18 @@ Todas as Threads que estão encarregues de enviar PDUs para a rede contactam est
 Recebendo PDUs das várias Threads esta classe tem ainda a função de serializá-los, para ser possível criar datagramas e enviá-los para a rede.
 
 
+\section{Funcionalidades Adicionais}
+
+\subsection{Servidor Multithreaded}
+No trabalho decidimos implementar servidores multithreaded, ou seja, servidores que disponibilizam um ficheiro no qual vários clientes podem estar a realizar download concorrentemente.
+
+\subsection{Controlo de Fluxo}
+O controlo de fluxo é algo com um papel muito importante na transferência confiável de dados. Aplicando tal ao nosso serviço, garantimos que a quantidade de dados a transferir entre end-systems é acordada tanto pelo emissor como pelo recetor. Esta quantidade referida é controlada por uma janela de receção de dados que é fixa, e que faz com que o buffer do recetor nunca seja extravasado. Caso contrário, poderia existir perda de dados, algo que não deve acontecer.
+
+\subsection{Controlo de Congestão}
+O controlo de congestão
+
+\subsection{Segurança}
 
 
 
