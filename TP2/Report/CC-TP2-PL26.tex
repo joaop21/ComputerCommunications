@@ -242,16 +242,37 @@ Recebendo PDUs das várias Threads esta classe tem ainda a função de serializ�
 \section{Funcionalidades Adicionais}
 
 \subsection{Servidor Multithreaded}
+
 No trabalho decidimos implementar servidores multithreaded, ou seja, servidores que disponibilizam um ficheiro no qual vários clientes podem estar a realizar download concorrentemente.
 
+Quem trata de tal tarefa é o \textbf{TransfereCC} que mantêm um Map que associa a Thread responsável por um dado IP ao IP.
+Recebendo datagramas desse IP entrega à Thread responsável.
+
 \subsection{Controlo de Fluxo}
+
 O controlo de fluxo é algo com um papel muito importante na transferência confiável de dados. Aplicando tal ao nosso serviço, garantimos que a quantidade de dados a transferir entre end-systems é acordada tanto pelo emissor como pelo recetor. Esta quantidade referida é controlada por uma janela de receção de dados que é fixa, e que faz com que o buffer do recetor nunca seja extravasado. Caso contrário, poderia existir perda de dados, algo que não deve acontecer.
 
+Implementamos tal mecanismo com uma variável que é incrementada quando a receção dum novo ACK e decrementada quando é enviado um novo segmento.
+
 \subsection{Controlo de Congestão}
-O controlo de congestão
+
+O controlo de congestão serve para adaptar a comunicação às características da rede, desta forma implementamos um mecanismo na classe \textbf{Estado} que atualiza a janela consoante os eventos que ocorram. Esta atualização segue o funcionamento característico do TCP apresentado a seguir.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[scale=0.4]{Controlo_Congestao.png}
+\end{center}
+\caption{Diagrama de controlo de congestão.}
+\end{figure}
 
 \subsection{Segurança}
 
+Para implementar um sistema mínimo de segurança decidimos autenticar uma das partes, neste caso o servidor. Desta forma temos a certeza que o ficheiro descarregado é proveniente duma fonte fidedigna.
+
+O nosso algoritmo foi encriptar o ficheiro com a chave privada da fonte para assegurar a característica de não-repúdio. Tal encriptação está disponível no ficheiro \textbf{SignFile.java}. É criado um novo ficheiro com a assinatura, dividido e enviado.
+
+Do lado do recetor, este desencripta o ficheiro utilizando a chave pública do servidor, desta forma sabe que o ficheiro é proveniente unicamente daquela entidade. Tal algoritmo de desencriptação está disponível no ficheiro \textbf{VerifyFile.java}.
+É criado um ficheiro que irá parar à pasta \textbf{MyData} que ainda vem com a assinatura (encriptado) que após a transferência pode ser removido desta pasta pois não servirá para nada.
 
 
 \section{Testes e resultados}
@@ -277,8 +298,15 @@ Agora, nesta imagem, é possível visualizar o Servidor1 a disponibilizar o exec
 \end{figure}
 
 
-
+\newpage
 \section{Conclusões}
+
+Em jeito de conclusão o grupo pensa que o trabalho realizado com sucesso e o resultado esperado foi atingido conseguindo desta forma implementar um protocolo de transferência de ficheiros fiável sobre um canal não fiável (UDP).
+
+Este projeto revelou-se bastante desafiador numa perspetiva da programação que foi necessária para atingir os fins requeridos. Para o futuro projetar-se-ia uma revisão na parte de segurança, visando autenticar a parte restante, e rever o final de conexão que por vezes gera problemas. De forma ambiciosa poderíamos apontar para a implementação duma transferência multiservidor que requereria mais tempo e uma abordagem possivelmente diferente.
+
+De um modo geral este trabalho foi deveras importante pois obrigou-nos a perceber claramente o que é um transferência fiável e orientada à conexão, ajudando-nos desta forma em problemas futuros desta natureza.
+
 
 
 
